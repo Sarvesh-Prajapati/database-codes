@@ -1,2 +1,3 @@
-*.sql linguist-detectable=true
-*.sql linguist-language=MySQL
+git add .gitattributes
+git commit -m "Force MySQL language detection"
+git push origin main
