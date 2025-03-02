@@ -1,5 +1,5 @@
 -- Query typing order is: SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY
--- Query processing order is: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY
+-- Query processing order is: FROM (including JOINS), WHERE, GROUP BY (including aggregate fns.), HAVING, SELECT, ORDER BY
 
 USE sql_store;
 SHOW TABLES;
