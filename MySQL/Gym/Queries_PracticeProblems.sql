@@ -51,15 +51,23 @@ SELECT num FROM cte WHERE num = prev_val AND num = next_val;
 --  finding the IDs as well of the 3 consecutive nums (extending the above problem) --------------------------------
 -- Run the following two queries one by one to see the logic
 SELECT * 
-	, DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS drnk
+    , DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS drnk
     , id - DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS diff 
 FROM threevals;
 SELECT diff, count(*) AS cnt FROM (SELECT *, id - DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS diff FROM threevals) t GROUP BY diff;
 
 -- final solution using above two queries in CTEs
 WITH cte AS 
-	(SELECT *, id - DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS diff FROM threevals),
-	cte2 AS (SELECT diff, count(*) cnt FROM cte GROUP BY diff HAVING count(*) >= 3)
+(SELECT *
+    , id - DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS diff
+FROM threevals
+),
+cte2 AS
+(SELECT diff
+	, count(*) cnt
+FROM cte
+GROUP BY diff
+HAVING count(*) >= 3 )
 -- SELECT * FROM cte, cte2 WHERE cte.diff = cte2.diff ;
 SELECT GROUP_CONCAT(id) AS IDs, num AS consecutive_num FROM (SELECT cte.id, cte.num FROM cte, cte2 WHERE cte.diff = cte2.diff) t GROUP BY num;
 -- To get 'id' and 'num' only cols, replace the above uncommented SELECT stmt with:  SELECT cte.id, cte.num FROM cte, cte2 WHERE cte.diff = cte2.diff ;
