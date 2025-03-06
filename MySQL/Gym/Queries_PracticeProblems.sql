@@ -1,10 +1,10 @@
-USE sql_forda;
+-- USE sql_forda;
 
 -- ---------------------- tbl: ffill -- Forward filling -------------------
 SELECT * FROM ffill;
 SET @var = NULL;
 SELECT
-	id
+    id
     , dept
     , @var := COALESCE(dept, @var) AS ffill_value
 FROM ffill;
@@ -16,12 +16,12 @@ WITH cte AS
 
 -- ------------------ Following identical queries are just for testing ------------
 -- SELECT *
--- 	, COUNT(dept) OVER(ORDER BY id)
+--     , COUNT(dept) OVER(ORDER BY id)
 --     , COUNT(dept) OVER(ORDER BY dept)  -- final ordering of o/p as per this line 
 -- FROM ffill;
 
 -- SELECT *
--- 	, COUNT(dept) OVER(ORDER BY dept)
+--     , COUNT(dept) OVER(ORDER BY dept)
 --     , COUNT(dept) OVER(ORDER BY id)    -- final ordering of o/p as per this line
 -- FROM ffill;
 
