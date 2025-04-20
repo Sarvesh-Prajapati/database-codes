@@ -237,6 +237,33 @@ FROM CTE_emp_presence
 WHERE time_id = emp_latest_time AND emp_status = 'ENTRY';
 
 
+-- ----------------------- tbl: consecutive_raise --  find emp_id having salary increasing over 3 years ---------------------------------- 
+
+-- CREATE TABLE consecutive_raise (emp_id INT, emp_name VARCHAR(100), emp_salary INT, appraisal_year INT);
+-- INSERT INTO consecutive_raise(emp_id, emp_name, emp_salary, appraisal_year) VALUES (1, 'Alice', 50000, 2021),(1, 'Alice', 55000, 2022),(1, 'Alice', 60000, 2023),(2, 'Bob', 60000, 2021),(2, 'Bob', 58000, 2022),(2, 'Bob', 62000, 2023), (3, 'Charlie', 70000, 2020), (3, 'Charlie', 72000, 2021), (3, 'Charlie', 71000, 2022), (4, 'David', 40000, 2020), (4, 'David', 45000, 2021), (4, 'David', 50000, 2022), (5, 'Eve', 30000, 2021), (5, 'Eve', 35000, 2022);
+
+SELECT * FROM consecutive_raise;
+
+WITH CTE_years_sorted AS 
+(SELECT *, ROW_NUMBER() OVER(PARTITION BY emp_id ORDER BY appraisal_year) AS rw_num FROM consecutive_raise),
+CTE_extract_empName AS
+(SELECT 
+	CASE WHEN emp_salary < LEAD(emp_salary) OVER(PARTITION BY emp_id) 
+		   AND LEAD(emp_salary, 1) OVER(PARTITION BY emp_id) < LEAD(emp_salary, 2) OVER(PARTITION BY emp_id)
+		THEN emp_name
+	END AS incr_sal_emp_name
+	FROM CTE_years_sorted 
+)
+SELECT incr_sal_emp_name FROM CTE_extract_empName WHERE incr_sal_emp_name IS NOT NULL;
+
+
+
+
+
+
+
+
+
 
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[aeiouAEIOU]', ''));  -- Counting the no. of vowels in a word (2)
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[^aeiouAEIOU]', ''));  -- Counting the consonants in a word  (3)
