@@ -25,9 +25,9 @@ FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
 
 SELECT                                                  -- Here is the SELECT statement generated as o/p in above query
-	SUM(`empid` IS NULL) AS `empid_nulls`
-	, SUM(`fullname` IS NULL) AS `fullname_nulls`
-	, SUM(`deptid` IS NULL) AS `deptid_nulls`
+     SUM(`empid` IS NULL) AS `empid_nulls`
+    , SUM(`fullname` IS NULL) AS `fullname_nulls`
+    , SUM(`deptid` IS NULL) AS `deptid_nulls`
     , SUM(`salary` IS NULL) AS `salary_nulls`
     , SUM(`hiredate` IS NULL) AS `hiredate_nulls`
     , SUM(`mgrid` IS NULL) AS `mgrid_nulls`
