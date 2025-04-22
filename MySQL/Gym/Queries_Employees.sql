@@ -12,6 +12,30 @@ FROM information_schema.TABLES
 WHERE TABLE_SCHEMA = 'sql_forda' AND table_name = 'employees'
 GROUP BY 1;
 
+
+-- Checking NULLs in all columns
+
+SELECT CONCAT                                          -- Generates a SELECT statement as output
+(
+  'SELECT ',
+   GROUP_CONCAT(CONCAT('SUM(`', COLUMN_NAME, '` IS NULL) AS `', COLUMN_NAME, '_nulls`') SEPARATOR ', '),
+  ' FROM employees;'
+) AS auto_selecting_columns
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
+
+SELECT                                                  -- Here is the SELECT statement generated as o/p in above query
+	SUM(`empid` IS NULL) AS `empid_nulls`
+	, SUM(`fullname` IS NULL) AS `fullname_nulls`
+	, SUM(`deptid` IS NULL) AS `deptid_nulls`
+    , SUM(`salary` IS NULL) AS `salary_nulls`
+    , SUM(`hiredate` IS NULL) AS `hiredate_nulls`
+    , SUM(`mgrid` IS NULL) AS `mgrid_nulls`
+FROM employees;
+
+
+
+
 -- Replacing all vowels with underscore in column names
 -- SELECT COLUMN_NAME, REGEXP_REPLACE(COLUMN_NAME, '[aeiou]', '_' ) AS new_col_name
 -- FROM INFORMATION_SCHEMA.COLUMNS
