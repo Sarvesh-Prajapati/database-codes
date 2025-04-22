@@ -33,18 +33,15 @@ SELECT                                                  -- Here is the SELECT st
     , SUM(`mgrid` IS NULL) AS `mgrid_nulls`
 FROM employees;
 
-
-
-
 -- Replacing all vowels with underscore in column names
--- SELECT COLUMN_NAME, REGEXP_REPLACE(COLUMN_NAME, '[aeiou]', '_' ) AS new_col_name
--- FROM INFORMATION_SCHEMA.COLUMNS
--- WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
+SELECT COLUMN_NAME, REGEXP_REPLACE(COLUMN_NAME, '[aeiou]', '_' ) AS new_col_name
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
 
 -- Generating ALTER TABLE stmts to rename all columns
--- SELECT CONCAT('ALTER TABLE `employees` RENAME COLUMN `', COLUMN_NAME, '` TO `', REPLACE(COLUMN_NAME, ' ', '_'), '`;') AS rename_statement
--- FROM INFORMATION_SCHEMA.COLUMNS
--- WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
+SELECT CONCAT('ALTER TABLE `employees` RENAME COLUMN `', COLUMN_NAME, '` TO `', REPLACE(COLUMN_NAME, ' ', '_'), '`;') AS rename_statement
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
 
 
 -- ------------------ Who is the manager of who ---------------------------------------
