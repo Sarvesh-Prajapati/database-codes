@@ -22,7 +22,7 @@ WITH CTE_Salary_Ranked AS
     , @temp_rank := IF(salary = @prev_sal, @temp_rank, @temp_rank + 1) AS salary_rank
     , @prev_sal := salary
 FROM (SELECT DISTINCT salary FROM employees ORDER BY salary DESC) tmp
-) SELECT salary FROM CTE_Salary_Ranked WHERE salary_rank = 3;
+) SELECT salary FROM CTE_Salary_Ranked WHERE salary_rank = 3;            -- third highest salary, as an example
 
 -- Checking NULLs in all columns
 
