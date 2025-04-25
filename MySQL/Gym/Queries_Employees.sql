@@ -13,6 +13,17 @@ WHERE TABLE_SCHEMA = 'sql_forda' AND table_name = 'employees'
 GROUP BY 1;
 
 
+-- ------------------ N'th Highest Salary (Using variables) ---------------------------------------------
+SET @prev_salary = NULL;
+SET @temp_rank = 0;
+WITH CTE_Salary_Ranked AS 
+(SELECT
+	salary
+    , @temp_rank := IF(salary = @prev_sal, @temp_rank, @temp_rank + 1) AS salary_rank
+    , @prev_sal := salary
+FROM (SELECT DISTINCT salary FROM employees ORDER BY salary DESC) tmp
+) SELECT salary FROM CTE_Salary_Ranked WHERE salary_rank = 3;
+
 -- Checking NULLs in all columns
 
 SELECT CONCAT                                          -- Generates a SELECT statement as output
