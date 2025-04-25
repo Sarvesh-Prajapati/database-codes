@@ -18,7 +18,7 @@ SET @prev_salary = NULL;
 SET @temp_rank = 0;
 WITH CTE_Salary_Ranked AS 
 (SELECT
-	salary
+    salary
     , @temp_rank := IF(salary = @prev_sal, @temp_rank, @temp_rank + 1) AS salary_rank
     , @prev_sal := salary
 FROM (SELECT DISTINCT salary FROM employees ORDER BY salary DESC) tmp
