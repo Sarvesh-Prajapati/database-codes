@@ -1,6 +1,72 @@
 USE sql_forda;
 SELECT * FROM sql_forda.employees;
 
+
+-- Instantly getting no. of rows in a table [ coz COUNT(*) will be slow for, say, 500 million rows so we query metadata]
+SELECT TABLE_NAME, TABLE_ROWS 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'c4_legislators_terms';
+
+
+-- Calculate table sizes in different memory units
+
+SELECT 
+     table_schema AS `Database`
+     , table_name AS `Table`
+     , ROUND((data_length + index_length) / (1024), 2) AS `Size (B)`
+     , ROUND((data_length + index_length) / (1024 * 1024), 2) AS `Size (MB)`
+     , ROUND((data_length + index_length) / (1024 * 1024 * 1024), 2) AS `Size (GB)`
+FROM information_schema.tables
+WHERE table_schema = 'sql_forda' AND table_name = 'c7_game_actions';
+
+-- Running total of salaries without window functions
+
+SELECT
+ A.hiredate,
+ A.salary,
+ (
+ SELECT SUM(B.salary)
+ FROM employees B
+ WHERE B.hiredate <= A.hiredate
+ ) AS RunningTotal
+FROM employees A
+ORDER BY A.hiredate;
+
+-- ------------------ N'th Highest Salary ---------------------------------------------
+
+SET @prev_salary = NULL;
+SET @temp_rank = 0;
+
+WITH CTE_Salary_Ranked AS 
+(SELECT
+	salary
+    , @temp_rank := IF(salary = @prev_salary, @temp_rank, @temp_rank + 1) AS salary_rank
+    , @prev_salary := salary
+FROM (SELECT DISTINCT salary FROM employees ORDER BY salary DESC) tmp_tbl
+)
+SELECT salary FROM CTE_Salary_Ranked WHERE salary_rank = 3;    -- Third highest salary
+
+-- Checking NULLs in all columns
+
+SELECT CONCAT        -- Generates a SELECT statement as output
+(
+  'SELECT ', 
+   GROUP_CONCAT(CONCAT('SUM(`', COLUMN_NAME, '` IS NULL) AS `', COLUMN_NAME, '_nulls`') SEPARATOR ', '),
+   -- GROUP_CONCAT(CONCAT('SUM(', COLUMN_NAME, ' IS NULL) AS ', COLUMN_NAME, '_nulls') SEPARATOR ', '),        will also work
+  ' FROM employees;'
+) AS auto_selecting_columns
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'employees';
+
+SELECT                -- Here is the SELECT statement generated as o/p in above query
+	SUM(`empid` IS NULL) AS `empid_nulls`
+	, SUM(`fullname` IS NULL) AS `fullname_nulls`
+	, SUM(`deptid` IS NULL) AS `deptid_nulls`
+    , SUM(`salary` IS NULL) AS `salary_nulls`
+    , SUM(`hiredate` IS NULL) AS `hiredate_nulls`
+    , SUM(`mgrid` IS NULL) AS `mgrid_nulls`
+FROM employees;
+
 -- All info about every column of `employees` table
 SELECT *
 FROM INFORMATION_SCHEMA.COLUMNS
