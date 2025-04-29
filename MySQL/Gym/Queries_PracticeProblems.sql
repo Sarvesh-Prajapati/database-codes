@@ -271,6 +271,11 @@ FROM
  ) temp_tbl
 WHERE emp_skills = "SQL";
 
+-- another solution
+SELECT emp_id
+FROM skills_table
+GROUP BY emp_id
+HAVING COUNT(DISTINCT skills) = 1 AND MAX(skills) = 'SQL';
 
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[aeiouAEIOU]', ''));  -- Counting the no. of vowels in a word (2)
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[^aeiouAEIOU]', ''));  -- Counting the consonants in a word  (3)
