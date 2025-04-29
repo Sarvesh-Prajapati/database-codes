@@ -257,12 +257,19 @@ CTE_extract_empName AS
 SELECT incr_sal_emp_name FROM CTE_extract_empName WHERE incr_sal_emp_name IS NOT NULL;
 
 
+-- ----------------------- tbl: skills_table --  find emp_id having ONLY 'SQL' as skill (only SQL, no other skill) ---------------------------------- 
 
+-- SELECT * FROM skills_table; 
 
-
-
-
-
+SELECT emp_id
+FROM 
+(SELECT 
+    emp_id
+    , GROUP_CONCAT(skills SEPARATOR ', ') AS emp_skills
+ FROM skills_table
+ GROUP BY emp_id
+ ) temp_tbl
+WHERE emp_skills = "SQL";
 
 
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[aeiouAEIOU]', ''));  -- Counting the no. of vowels in a word (2)
