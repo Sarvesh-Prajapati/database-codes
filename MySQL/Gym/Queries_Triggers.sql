@@ -4,25 +4,26 @@ USE sql_forda;
 
 -- Create an audit table
 
+DROP TABLE IF EXISTS EMPLOYEE_ALERT_LOG;
 CREATE TABLE EMPLOYEE_ALERT_LOG
 (
-    log_id INT AUTO_INCREMENT PRIMARY KEY,
-    empid INT,
-    salary DECIMAL(10,2),
+	empid INT AUTO_INCREMENT PRIMARY KEY,
+    fullname VARCHAR(50),
+    hiredate DATE,
     insert_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create the trigger that updates the EMPLOYEE_ALERT_LOG table when an INSERT happens
+-- Trigger that updates the EMPLOYEE_ALERT_LOG table when an INSERT happens
 
+DROP TRIGGER IF EXISTS ALERT_ON_INSERT;
 DELIMITER //
 CREATE TRIGGER ALERT_ON_INSERT
 AFTER INSERT ON employees
 FOR EACH ROW
 BEGIN
-    INSERT INTO EMPLOYEE_ALERT_LOG VALUES (NEW.empid, NEW.salary);
+    INSERT INTO EMPLOYEE_ALERT_LOG VALUES (NEW.empid, NEW.fullname, NEW.hiredate, CURRENT_TIMESTAMP());
 END //
 DELIMITER ;
 
-SELECT * FROM EMPLOYEE_ALERT_LOG ;
-
--- INSERT INTO employees VALUES(11, 'TOM FELTON', 5, 200000.00, '1996-05-10', 9999);
+INSERT INTO employees VALUES(11, 'TOM HANKS', 6, 25000.00, '1990-05-10', 888);
+SELECT * FROM EMPLOYEE_ALERT_LOG ;      -- check if the trigger fired after above INSERT
