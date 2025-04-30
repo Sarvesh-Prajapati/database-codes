@@ -1,5 +1,13 @@
 USE sql_forda;
 
+-- Since triggers are not visible (like procedures) in Workbench, here's how we get details of the triggers
+
+SHOW TRIGGERS;
+
+SELECT * FROM information_schema.TRIGGERS      -- details about triggers
+WHERE TRIGGER_SCHEMA = 'your_database_name';
+
+
 -- -------------------------------- Log the INSERT into an audit table ----------------------------------
 
 -- Create an audit table
