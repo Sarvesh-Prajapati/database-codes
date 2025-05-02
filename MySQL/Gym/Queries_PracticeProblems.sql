@@ -277,6 +277,22 @@ FROM skills_table
 GROUP BY emp_id
 HAVING COUNT(DISTINCT skills) = 1 AND MAX(skills) = 'SQL';
 
+-- ----------------------- tbl: colors --  exploding a string of values into many rows ----------------------------------
+
+-- CREATE TABLE colors(id INT, colors TEXT);
+-- INSERT INTO colors VALUES (1, 'Red,Green,Blue'), (2, 'Orangered,Periwinkle');
+-- SELECT * FROM colors;  
+
+WITH RECURSIVE explode AS
+(
+    SELECT * FROM colors
+    UNION ALL
+    SELECT id, REGEXP_REPLACE(colors, '^[^,]*,', '') colors FROM explode
+    WHERE colors LIKE '%,%'
+) SELECT id, REGEXP_REPLACE(colors, ',.*', '') colors FROM explode ORDER BY id;
+
+
+
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[aeiouAEIOU]', ''));  -- Counting the no. of vowels in a word (2)
 -- SELECT LENGTH("APPLE") - LENGTH(REGEXP_REPLACE("APPLE", '[^aeiouAEIOU]', ''));  -- Counting the consonants in a word  (3)
 
