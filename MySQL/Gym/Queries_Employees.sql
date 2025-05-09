@@ -1,6 +1,12 @@
 USE sql_forda;
 SELECT * FROM sql_forda.employees;
 
+-- Employees having salaries greater than overall avg salary (NOT THE TRIVIAL QUERY!)
+WITH CTE_avg_sal AS
+(SELECT avg(salary) AS avgsal FROM employees )
+SELECT fullname, salary, avgsal 
+FROM employees JOIN CTE_avg_sal ON 1=1     -- select and run upto this line to see intermediate result
+WHERE salary > avgsal;
 
 -- Instantly getting no. of rows in a table [ coz COUNT(*) will be slow for, say, 500 million rows so we query metadata]
 SELECT TABLE_NAME, TABLE_ROWS 
