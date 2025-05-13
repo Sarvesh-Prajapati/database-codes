@@ -1,6 +1,12 @@
 USE sql_forda;
 SELECT * FROM sql_forda.employees;
 
+-- Dept having more than 3 employees
+SELECT deptid 
+FROM employees
+GROUP BY deptid 
+HAVING COUNT(DISTINCT empid) > 3;
+
 -- Employees having salaries greater than overall avg salary (NOT THE TRIVIAL QUERY!)
 WITH CTE_avg_sal AS
 (SELECT avg(salary) AS avgsal FROM employees )
