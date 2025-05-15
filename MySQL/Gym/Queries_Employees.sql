@@ -9,6 +9,9 @@ SELECT
     , (SUM(salary) / SUM(SUM(salary)) OVER ()) * 100 AS pct_of_net FROM employees 
 GROUP BY deptid;
 
+-- SELECT SUM(SUM(salary)) OVER() FROM employees;  -- returns 529000
+-- SELECT SUM(salary) OVER() FROM employees;   -- returns 529000 for each row
+
 -- Dept having more than 3 employees
 SELECT deptid 
 FROM employees
