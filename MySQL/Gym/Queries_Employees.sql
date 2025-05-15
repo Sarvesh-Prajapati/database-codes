@@ -3,10 +3,10 @@ SELECT * FROM sql_forda.employees;
 
 -- Each dept's total salary as % of net salary of all depts
 SELECT 
-	deptid
+    deptid
     , SUM(salary) AS total_dept_sal
     , SUM(SUM(salary)) OVER () AS net_sal
-	, (SUM(salary) / SUM(SUM(salary)) OVER ()) * 100 AS pct_of_net FROM employees 
+    , (SUM(salary) / SUM(SUM(salary)) OVER ()) * 100 AS pct_of_net FROM employees 
 GROUP BY deptid;
 
 -- Dept having more than 3 employees
