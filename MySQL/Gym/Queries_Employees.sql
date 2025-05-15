@@ -9,6 +9,16 @@ SELECT
     , (SUM(salary) / SUM(SUM(salary)) OVER ()) * 100 AS pct_of_net FROM employees 
 GROUP BY deptid;
 
+-- -------- Above query using CTE
+WITH CTE_sal_totals AS
+(SELECT 
+    deptid
+    , SUM(salary) AS total_dept_sal
+    , SUM(SUM(salary)) OVER() AS net_sal
+FROM employees
+GROUP BY deptid
+) SELECT *, total_dept_sal/net_sal * 100 AS pct_of_net FROM CTE_sal_totals;
+
 -- SELECT SUM(SUM(salary)) OVER() FROM employees;  -- returns 529000
 -- SELECT SUM(salary) OVER() FROM employees;   -- returns 529000 for each row
 
