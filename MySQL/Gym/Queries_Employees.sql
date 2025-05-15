@@ -5,7 +5,8 @@ SELECT * FROM sql_forda.employees;
 SELECT 
 	deptid
     , SUM(salary) AS total_dept_sal
-    , SUM(SUM(salary)) OVER () AS net_sal, (SUM(salary) / SUM(SUM(salary)) OVER ()) * 100 AS pct_of_net FROM employees 
+    , SUM(SUM(salary)) OVER () AS net_sal
+	, (SUM(salary) / SUM(SUM(salary)) OVER ()) * 100 AS pct_of_net FROM employees 
 GROUP BY deptid;
 
 -- Dept having more than 3 employees
