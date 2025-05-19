@@ -385,7 +385,8 @@ CTE_salary_ratio AS
 		, MIN(change_date) AS emp_join_date
 	FROM CTE_dateRanked 
     GROUP BY employee_id)
-SELECT cte.employee_id
+SELECT 
+	cte.employee_id
 	, MAX(CASE WHEN rnk_dsc = 1 THEN salary END) AS latest_salary
     , SUM(CASE WHEN promotion = 'Yes' THEN 1 ELSE 0 END) AS count_promo
     , MAX(ROUND((salary - prev_salary)/prev_salary * 100.00, 2)) AS max_salary_growth
