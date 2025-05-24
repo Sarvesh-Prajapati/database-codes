@@ -22,7 +22,7 @@ lead_date DATE   -- yyyy-mm-dd format
 
 DROP TABLE IF EXISTS sales;
 CREATE TABLE sales(
-cust_id INT,
+cust_id INT,             -- column dropped after data loading
 cust_name VARCHAR(30),
 sp_assigned VARCHAR(30),
 category VARCHAR(20),
