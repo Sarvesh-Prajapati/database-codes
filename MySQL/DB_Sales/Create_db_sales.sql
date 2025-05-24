@@ -14,7 +14,7 @@ cust_name VARCHAR(30),
 sector VARCHAR(20),
 city VARCHAR(20), 
 state VARCHAR(20),
-postal_code BIGINT,
+postal_code BIGINT,         -- column dropped after data loading
 region VARCHAR(20),
 sp_assigned VARCHAR(30),
 lead_date DATE   -- yyyy-mm-dd format
