@@ -50,7 +50,7 @@ ORDER BY region, state WITH ROLLUP ;   -- ROLLUP
 
 -- More elegant query (NULLs of above query's output replaced by ALL STATES/ALL REGIONS)
 SELECT
-	IF(GROUPING(L.region), "ALL REGIONS", L.region) AS REGIONS   -- GROUPING fn
+    IF(GROUPING(L.region), "ALL REGIONS", L.region) AS REGIONS   -- GROUPING fn
     , IF(GROUPING(L.state), "ALL STATES", L.state) AS STATES
     , SUM(S.sales_amt) AS state_sales
     , COUNT(S.cust_id) AS state_conversion_count
