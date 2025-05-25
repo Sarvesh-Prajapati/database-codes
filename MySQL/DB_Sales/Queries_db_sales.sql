@@ -23,7 +23,7 @@ ALTER TABLE sales DROP cust_id;  -- dropped 'cust_id' col as it was not an ID, r
 -- customer, create a new table 'new_sales' as follows:
 CREATE TABLE new_sales AS
 SELECT
-	L.cust_id
+    L.cust_id
     , S.cust_name
     , S.sp_assigned
     , S.category
@@ -38,7 +38,7 @@ ALTER TABLE new_sales RENAME sales;  -- Rename the 'new_sales' table to 'sales' 
 
 -- 1. Calculate the sales by state in each region and leads' conversion count by state in each region.
 SELECT
-	L.region
+    L.region
     , L.state
     , SUM(S.sales_amt) AS state_sales
     , COUNT(S.cust_id) AS state_conversion_count
