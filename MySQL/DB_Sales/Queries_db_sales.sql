@@ -36,7 +36,8 @@ ALTER TABLE new_sales RENAME sales;  -- Rename the 'new_sales' table to 'sales' 
 
 -- Now 'sales' table has correct 'cust_id' column that matches 'cust_name' correctly with that in 'leads' table
 
--- 1. Calculate the sales by state in each region and leads' conversion count by state in each region.
+-- 1. Calculate the sales by state in each region and leads' conversion count by state in each region 
+-- with rollup (i.e. summary rows included)
 SELECT
     L.region
     , L.state
