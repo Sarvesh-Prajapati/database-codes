@@ -27,7 +27,7 @@ cust_name VARCHAR(30),
 sp_assigned VARCHAR(30),
 category VARCHAR(20),
 order_date DATE,   -- yyyy-mm-dd format
-sales DECIMAL 
+sales DECIMAL(10, 2)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 DROP TABLE IF EXISTS targets;
