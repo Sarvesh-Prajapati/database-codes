@@ -33,7 +33,7 @@ sales DECIMAL(10, 2)
 DROP TABLE IF EXISTS targets;
 CREATE TABLE targets(
 sales_person VARCHAR(30),
-target DECIMAL 
+target DECIMAL(10, 2)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
