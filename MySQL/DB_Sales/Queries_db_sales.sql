@@ -37,7 +37,7 @@ ALTER TABLE new_sales RENAME sales;  -- Rename the 'new_sales' table to 'sales' 
 -- Now 'sales' table has correct 'cust_id' column that matches 'cust_name' correctly with that in 'leads' table
 
 -- 1. Calculate the sales by state in each region and leads' conversion count by state in each region 
--- with rollup (i.e. summary rows included)
+-- with rollup applied (i.e. summary rows included).
 SELECT
     L.region
     , L.state
@@ -45,7 +45,8 @@ SELECT
     , COUNT(S.cust_id) AS state_conversion_count
 FROM leads L JOIN sales S ON L.cust_id = S.cust_id
 GROUP BY region, state
-ORDER BY region, state;
+ORDER BY region, state
+WITH ROLLUP ;
 
 
 -- 2. 
