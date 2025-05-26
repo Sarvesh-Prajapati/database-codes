@@ -56,7 +56,8 @@ SELECT
     , SUM(S.sales_amt) AS state_sales
     , COUNT(S.cust_id) AS state_conversion_count
 FROM leads L JOIN sales S ON L.cust_id = S.cust_id
-GROUP BY L.region, L.state WITH ROLLUP;
+GROUP BY L.region, L.state
+WITH ROLLUP;
 
 
 -- 2. 
