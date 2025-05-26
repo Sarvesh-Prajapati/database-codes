@@ -45,7 +45,8 @@ SELECT
     , COUNT(S.cust_id) AS state_conversion_count
 FROM leads L JOIN sales S ON L.cust_id = S.cust_id
 GROUP BY region, state
-ORDER BY region, state WITH ROLLUP ;   -- ROLLUP
+ORDER BY region, state 
+WITH ROLLUP ;   -- ROLLUP
 
 
 -- More elegant query (NULLs of above query's output replaced by ALL STATES/ALL REGIONS)
