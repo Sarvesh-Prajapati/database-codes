@@ -43,7 +43,8 @@ target DECIMAL(10, 2)
  
 LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\CSV_FILE_NAME_HERE.csv'  -- path where CSVs MUST be present
 INTO TABLE table_into_which_CSV_is_to_load_here
-FIELDS TERMINATED BY ','
+-- CHARACTER SET utf8     -- uncomment if data contains non-standard chars
+ FIELDS TERMINATED BY ','
 -- ENCLOSED BY ''         -- uncomment if applicable
 -- ESCAPED BY '\\'        -- uncomment if applicable
 LINES TERMINATED BY '\n'
