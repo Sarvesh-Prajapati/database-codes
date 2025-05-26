@@ -6,7 +6,7 @@ SELECT * FROM db_sales.targets;
 
 ALTER TABLE targets MODIFY COLUMN target DECIMAL(10, 2);  -- changing 'target' column's dtype to DECIMAL type
 ALTER TABLE targets RENAME COLUMN target TO target_amt;   -- renaming col name to be different from table name
-ALTER TABLE leads DROP postal_code;  -- dropping unneeded column
+ALTER TABLE leads DROP postal_code;  -- dropping redundant column
 
 SELECT *
 FROM INFORMATION_SCHEMA.TABLES 
