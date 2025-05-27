@@ -63,10 +63,10 @@ IGNORE 1 LINES;   -- if topmost record in CSV is header, this line skips it
 -- 5. Login to the connection again and follow the steps ahead:
 
 SHOW GLOBAL VARIABLES LIKE 'local_infile';  -- shows if this variable is OFF or ON (default OFF due to which LOAD DATA LOCAL throws error)
-SET GLOBAL local_infile = 1;  -- turning the 'local_file' var ON; since 'local_file' is global var, GLOBAL is used here
+SET GLOBAL local_infile = 1;  -- turning the 'local_infile' var ON; since 'local_infile' is global var, GLOBAL is used here
 LOAD DATA LOCAL INFILE 'D:\\Targets.csv' INTO TABLE Targets  -- any local source path of CSV
 CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES;
-SET GLOBAL local_infile = 0;  -- turning the setting back to default OFF
+SET GLOBAL local_infile = 0;  -- turning 'local_infile' back to default OFF
 
 -- 6. Again go back to MySQL connection (as in step-1 above).
 -- 7. Follow step-2. From the textbox 'Others', delete the previously added line: OPT_LOCAL_INFILE=1
