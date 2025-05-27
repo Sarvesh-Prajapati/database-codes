@@ -1,6 +1,7 @@
 -- Create database: db_sales
 -- In CSV files, change date cols to format 'yyyy-mm-dd' and Save.
 -- Load CSV files into the tables using 'Table Data Import Wizard' utility of MySQL
+-- CSVs can also be loaded using LOAD DATA stmt (or LOAD DATA LOCAL INFILE stmt after making some changes) as explained at the end below
 
 DROP DATABASE IF EXISTS db_sales;
 CREATE DATABASE db_sales;
