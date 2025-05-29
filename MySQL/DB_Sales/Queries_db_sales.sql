@@ -93,6 +93,7 @@ CTE_lead_counts AS (
         COUNT(cust_id) AS num_leads
     FROM CTE_lead_base
     GROUP BY sales_year, sales_month
+    ORDER BY sales_year, sales_month
 ),
 CTE_lead_growth AS (
     SELECT 
@@ -100,7 +101,6 @@ CTE_lead_growth AS (
         sales_month,
         num_leads,
         ROUND(COALESCE((num_leads - LAG(num_leads) OVER()) / LAG(num_leads) OVER() * 100, 0), 2) AS pct_lead_growth
-		-- ROUND(((num_leads - COALESCE(num_leads, 0)) / COALESCE(num_leads, 1)) * 100, 2) AS percent_growth
     FROM CTE_lead_counts
 ),
 CTE_sales_joined AS (
@@ -273,7 +273,16 @@ LEFT JOIN CTE_state_with_highest_avg sa ON lg.sales_year = sa.sales_year AND lg.
 LEFT JOIN CTE_region_with_highest_avg ra ON lg.sales_year = ra.sales_year AND lg.sales_month = ra.sales_month
 ORDER BY lg.sales_year, lg.sales_month;
 
-
++------------+-------------+-----------+-----------------+---------------+---------------+--------------+--------------+--------------------+------------------+-------------------+--------------------+
+| sales_year | sales_month | num_leads | pct_lead_growth | min_sales_amt | max_sales_amt | max_sales_sp | min_sales_sp | max_sales_category | highest_avg_city | highest_avg_state | highest_avg_region |
++------------+-------------+-----------+-----------------+---------------+---------------+--------------+--------------+--------------------+------------------+-------------------+--------------------+
+|       2022 |           1 |       134 |           0.00  |        414.75 |       1797.06 | Toby         | Kelly        | Copy Paper         | San Antonio      | Delaware          | East               |
+|       2022 |           2 |       120 |         -10.45  |        400.00 |       3743.46 | Michael      | Meredith     | Copy Paper         | Columbia         | Tennessee         | South              |
+|       2022 |           3 |       123 |           2.50  |        400.00 |       7040.73 | Michael      | Angela       | Copy Paper         | San Francisco    | Michigan          | West               |
+|       2022 |           4 |       126 |           2.44  |        403.00 |       1511.35 | Pam          | Michael      | Copy Paper         | Oceanside        | Massachusetts     | South              |
+|       2022 |           5 |       157 |          24.60  |        402.00 |       3782.78 | Ryan         | Andy         | Copy Paper         | Dublin           | Louisiana         | East               |
+|       2022 |           6 |       136 |         -13.38  |        408.02 |       8403.96 | Toby         | Andy         | Copy Paper         | Louisville       | Kentucky          | South              |
++------------+-------------+-----------+-----------------+---------------+---------------+--------------+--------------+--------------------+------------------+-------------------+--------------------+
 
 
 
