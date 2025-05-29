@@ -15,6 +15,7 @@ SHOW VARIABLES LIKE 'secure_file_priv';  -- returns local path where the JSON fi
 
 -- Load the JSON file into a session variable using LOAD_FILE() fn :
 SET @json_data = LOAD_FILE('C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/people.json');
+
 -- Check if the content was loaded (optional)
 SELECT LEFT(@json_data, 1000);  -- Check first 1000 chars
 
@@ -24,10 +25,10 @@ SELECT LEFT(@json_data, 1000);  -- Check first 1000 chars
 -- directly to JSON_TABLE() used ahead in SELECT, MySQL will throw error because it expects a proper character set like UTF8mb4. 
 -- So, we cast the loaded data to a proper JSON-compatible string using CAST(... AS CHAR CHARACTER SET utf8mb4) as in SELECT ahead.
 
-SELECT *           -- viewing the JSON content loaded in variable '@json_data'
+SELECT *              -- viewing the JSON content loaded in variable '@json_data'
 FROM JSON_TABLE(
-  CAST(@json_data AS CHAR CHARACTER SET utf8mb4),    -- casting BLOB to JSON-compatible string
-  '$[*]'    -- root-level array;  [{},{},...,{}]  is an array (list) of records
+  CAST(@json_data AS CHAR CHARACTER SET utf8mb4),         -- casting BLOB to JSON-compatible string
+  '$[*]'    -- root-level array;  [{},{},...]  is an array (list) of records
   COLUMNS 
   (
     pid INT PATH '$.id',                -- 'pid' is col alias for 'id' field of JSON content
@@ -35,9 +36,25 @@ FROM JSON_TABLE(
     lname TEXT PATH '$.last_name',      -- 'lname' is col alias for 'last_name' field of JSON content
     emailID VARCHAR(30) PATH '$.email'  -- 'emailID' is col alias for 'email' field of JSON
   )
-) AS tmp_tbl LIMIT 10;     -- 10 records are enough to just view the content
+) AS tmp_tbl LIMIT 10;
 
--- Now that the query above produced the JSON data in tabluar form as desired, we can insert that result into our table 'people'
++------+------------+----------+-------------------------+
+| pid  | fname      | lname    | emailID                 |
++------+------------+----------+-------------------------+
+|    1 | Guenna     | Guage    | gguage0@zimbio.com      |
+|    2 | Corie      | Couth    | ccouth1@posterous.com   |
+|    3 | Lorie      | Sutter   | lsutter2@google.nl      |
+|    4 | Susie      | Dootson  | sdootson3@smh.com.au    |
+|    5 | Rutherford | Abbots   | rabbots4@purevolume.com |
+|    6 | Siusan     | Tole     | stole5@nydailynews.com  |
+|    7 | Ilaire     | Pikesley | ipikesley6@1688.com     |
+|    8 | Yehudi     | Skerme   | yskerme7@jigsy.com      |
+|    9 | Emerson    | Linnane  | elinnane8@bandcamp.com  |
+|   10 | Garey      | Fernando | gfernando9@columbia.edu |
++------+------------+----------+-------------------------+
+
+-- Now that the query above produced the JSON data in tabluar form as desired, load that result into table 'people':
+  
 INSERT INTO people (id, first_name, last_name, email)
 SELECT *
 FROM JSON_TABLE(
@@ -52,4 +69,14 @@ FROM JSON_TABLE(
 ) AS tmp_tbl;
 
 -- -------------------- Step 4: View inserted data (optional)
-SELECT * FROM people LIMIT 10;
+SELECT * FROM people LIMIT 5;
+
++----+------------+-----------+-------------------------+
+| id | first_name | last_name | email                   |
++----+------------+-----------+-------------------------+
+|  1 | Guenna     | Guage     | gguage0@zimbio.com      |
+|  2 | Corie      | Couth     | ccouth1@posterous.com   |
+|  3 | Lorie      | Sutter    | lsutter2@google.nl      |
+|  4 | Susie      | Dootson   | sdootson3@smh.com.au    |
+|  5 | Rutherford | Abbots    | rabbots4@purevolume.com |
++----+------------+-----------+-------------------------+
