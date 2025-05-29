@@ -80,3 +80,5 @@ SELECT * FROM people LIMIT 5;
 |  4 | Susie      | Dootson   | sdootson3@smh.com.au    |
 |  5 | Rutherford | Abbots    | rabbots4@purevolume.com |
 +----+------------+-----------+-------------------------+
+
+-- DROP TABLE people;
