@@ -1,4 +1,4 @@
-USE sql_forda;
+USE sql_ForDA;
 
 -- -------------------- Step 1: Create the target table
 DROP TABLE IF EXISTS people;
