@@ -48,7 +48,6 @@ GROUP BY region, state
 ORDER BY region, state 
 WITH ROLLUP ;   -- ROLLUP
 
-
 -- More elegant query (NULLs of above query's output replaced by ALL STATES/ALL REGIONS)
 SELECT
     IF(GROUPING(L.region), "ALL REGIONS", L.region) AS REGIONS   -- GROUPING fn
@@ -60,13 +59,21 @@ GROUP BY L.region, L.state
 WITH ROLLUP;
 
 
--- 2. 
+-- 2. Write a query to generate a sales report which must contain following info (grouped by first two columns of the report 'sales year' and 'sales month' extracted from the lead_date column of leads table):
 
+-- ----- 1. Sales year
+-- ----- 2. Sales month
+-- ----- 3. Number of leads
+-- ----- 4. Percent growth in no. of leads
+-- ----- 5. Minimum sales amount
+-- ----- 6. Maximum sales amount
+-- ----- 7. Salesperson ( 'sp_assigned' column of leads table) who made maximum sales
+-- ----- 8. Salesperson who made minimum sales
+-- ----- 9. Category of maximum sales
+-- ----- 10. City with highest average sales
+-- ----- 11. State with highest average sales
+-- ----- 12. Region with highest average sales
 
-
-
-
--- REPORT QUERY
 WITH CTE_lead_base AS (
     SELECT 
         cust_id,
