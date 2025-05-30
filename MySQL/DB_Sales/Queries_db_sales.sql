@@ -76,115 +76,114 @@ WITH ROLLUP;
 
 WITH CTE_lead_base AS (
     SELECT 
-        cust_id,
-        sp_assigned,
-        city,
-        state,
-        region,
-        lead_date,
-        YEAR(lead_date) AS sales_year,
-        MONTH(lead_date) AS sales_month
+        cust_id
+        , sp_assigned
+        , city
+        , state
+        , region
+        , lead_date
+        , YEAR(lead_date) AS sales_year
+        , MONTH(lead_date) AS sales_month
     FROM leads
 ),
 CTE_lead_counts AS (
     SELECT 
-        sales_year,
-        sales_month,
-        COUNT(cust_id) AS num_leads
+        sales_year
+        , sales_month
+        , COUNT(cust_id) AS num_leads
     FROM CTE_lead_base
     GROUP BY sales_year, sales_month
     ORDER BY sales_year, sales_month
 ),
 CTE_lead_growth AS (
-    SELECT 
-        sales_year,
-        sales_month,
-        num_leads,
-        ROUND(COALESCE((num_leads - LAG(num_leads) OVER()) / LAG(num_leads) OVER() * 100, 0), 2) AS pct_lead_growth
+    SELECT *
+        -- , sales_year
+        -- , sales_month
+        -- , num_leads
+        , ROUND(COALESCE((num_leads - LAG(num_leads) OVER()) / LAG(num_leads) OVER() * 100, 0), 2) AS pct_lead_growth
     FROM CTE_lead_counts
 ),
 CTE_sales_joined AS (
     SELECT 
-        lb.sales_year,
-        lb.sales_month,
-        lb.city,
-        lb.state,
-        lb.region,
-        s.sp_assigned,
-        s.category,
-        s.sales_amt
-    FROM CTE_lead_base lb
-    JOIN sales s ON lb.cust_id = s.cust_id
+        lb.sales_year
+        , lb.sales_month
+        , lb.city
+        , lb.state
+        , lb.region
+        , s.sp_assigned
+        , s.category
+        , s.sales_amt
+    FROM CTE_lead_base lb JOIN sales s ON lb.cust_id = s.cust_id
 ),
 CTE_aggregates AS (
     SELECT 
-        sales_year,
-        sales_month,
-        MIN(sales_amt) AS min_sales_amt,
-        MAX(sales_amt) AS max_sales_amt
+        sales_year
+        , sales_month
+        , MIN(sales_amt) AS min_sales_amt
+        , MAX(sales_amt) AS max_sales_amt
     FROM CTE_sales_joined
     GROUP BY sales_year, sales_month
 ),
 CTE_sales_by_person AS (
     SELECT 
-        sales_year,
-        sales_month,
-        sp_assigned,
-        SUM(sales_amt) AS total_sales
+        sales_year
+        , sales_month
+        , sp_assigned
+        , SUM(sales_amt) AS total_sales
     FROM CTE_sales_joined
     GROUP BY sales_year, sales_month, sp_assigned
 ),
 CTE_sales_by_category AS (
     SELECT 
-        sales_year,
-        sales_month,
-        category,
-        SUM(sales_amt) AS total_sales
+        sales_year
+        , sales_month
+        , category
+        , SUM(sales_amt) AS total_sales
     FROM CTE_sales_joined
     GROUP BY sales_year, sales_month, category
 ),
 CTE_city_avg_sales AS (
     SELECT 
-        sales_year,
-        sales_month,
-        city,
-        AVG(sales_amt) AS avg_sales
+        sales_year
+        , sales_month
+        , city
+        , AVG(sales_amt) AS avg_sales
     FROM CTE_sales_joined
     GROUP BY sales_year, sales_month, city
 ),
 CTE_state_avg_sales AS (
     SELECT 
-        sales_year,
-        sales_month,
-        state,
-        AVG(sales_amt) AS avg_sales
+        sales_year
+        , sales_month
+        , state
+        , AVG(sales_amt) AS avg_sales
     FROM CTE_sales_joined
     GROUP BY sales_year, sales_month, state
 ),
 CTE_region_avg_sales AS (
     SELECT 
-        sales_year,
-        sales_month,
-        region,
-        AVG(sales_amt) AS avg_sales
+        sales_year
+        , sales_month
+        , region
+        , AVG(sales_amt) AS avg_sales
     FROM CTE_sales_joined
     GROUP BY sales_year, sales_month, region
 ),
 CTE_max_min_sp AS (
     SELECT 
-        sales_year,
-        sales_month,
-        MAX(total_sales) AS max_sp_sales,
-        MIN(total_sales) AS min_sp_sales
+        sales_year
+        , sales_month
+        , MAX(total_sales) AS max_sp_sales
+        , MIN(total_sales) AS min_sp_sales
     FROM CTE_sales_by_person
     GROUP BY sales_year, sales_month
 ),
 CTE_sp_with_extreme_sales AS (
     SELECT 
-        sbp.sales_year,
-        sbp.sales_month,
-        MAX(CASE WHEN sbp.total_sales = mm.max_sp_sales THEN sbp.sp_assigned END) AS max_sales_sp,
-        MAX(CASE WHEN sbp.total_sales = mm.min_sp_sales THEN sbp.sp_assigned END) AS min_sales_sp
+        sbp.sales_year
+        , sbp.sales_month
+        , MAX(CASE WHEN sbp.total_sales = mm.max_sp_sales THEN sbp.sp_assigned END) AS max_sales_sp
+        , MAX(CASE WHEN sbp.total_sales = mm.min_sp_sales THEN sbp.sp_assigned END) AS min_sales_sp
     FROM CTE_sales_by_person sbp
     JOIN CTE_max_min_sp mm 
         ON sbp.sales_year = mm.sales_year AND sbp.sales_month = mm.sales_month
@@ -192,78 +191,77 @@ CTE_sp_with_extreme_sales AS (
 ),
 CTE_max_category AS (
     SELECT 
-        sales_year,
-        sales_month,
-        category
+        sales_year
+        , sales_month
+        , category
     FROM (
         SELECT 
-            sales_year,
-            sales_month,
-            category,
-            RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY total_sales DESC) AS rnk
+            sales_year
+            , sales_month
+            , category
+            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY total_sales DESC) AS rnk
         FROM CTE_sales_by_category
     ) ranked
     WHERE rnk = 1
 ),
 CTE_city_with_highest_avg AS (
     SELECT 
-        sales_year,
-        sales_month,
-        city
+        sales_year
+        , sales_month
+        , city
     FROM (
         SELECT 
-            sales_year,
-            sales_month,
-            city,
-            RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
+            sales_year
+            , sales_month
+            , city
+            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
         FROM CTE_city_avg_sales
     ) ranked
     WHERE rnk = 1
 ),
 CTE_state_with_highest_avg AS (
     SELECT 
-        sales_year,
-        sales_month,
-        state
+        sales_year
+        , sales_month
+        , state
     FROM (
         SELECT 
-            sales_year,
-            sales_month,
-            state,
-            RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
+            sales_year
+            , sales_month
+            , state
+            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
         FROM CTE_state_avg_sales
     ) ranked
     WHERE rnk = 1
 ),
 CTE_region_with_highest_avg AS (
     SELECT 
-        sales_year,
-        sales_month,
-        region
+        sales_year
+        , sales_month
+        , region
     FROM (
         SELECT 
-            sales_year,
-            sales_month,
-            region,
-            RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
+            sales_year
+            , sales_month
+            , region
+            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
         FROM CTE_region_avg_sales
     ) ranked
     WHERE rnk = 1
 )
-
 SELECT 
-    lg.sales_year,
-    lg.sales_month,
-    lg.num_leads,
-    lg.pct_lead_growth,
-    ag.min_sales_amt,
-    ag.max_sales_amt,
-    spx.max_sales_sp,
-    spx.min_sales_sp,
-    mc.category AS max_sales_category,
-    ca.city AS highest_avg_city,
-    sa.state AS highest_avg_state,
-    ra.region AS highest_avg_region
+    lg.sales_year
+    , lg.sales_month
+    , lg.num_leads
+    , lg.pct_lead_growth
+    , ag.min_sales_amt
+    , ag.max_sales_amt
+    , spx.max_sales_sp
+    , spx.min_sales_sp
+    , mc.category AS max_sales_category
+    , ca.city AS highest_avg_city
+    , sa.state AS highest_avg_state
+    , ra.region AS highest_avg_region
 FROM CTE_lead_growth lg
 LEFT JOIN CTE_aggregates ag ON lg.sales_year = ag.sales_year AND lg.sales_month = ag.sales_month
 LEFT JOIN CTE_sp_with_extreme_sales spx ON lg.sales_year = spx.sales_year AND lg.sales_month = spx.sales_month
