@@ -22,6 +22,16 @@ GROUP BY deptid
 -- SELECT SUM(SUM(salary)) OVER() FROM employees;  -- returns 529000
 -- SELECT SUM(salary) OVER() FROM employees;   -- returns 529000 for each row
 
+-- Employees of same department
+SELECT e1.fullname, e1.deptid
+FROM employees e1
+WHERE EXISTS 
+(
+    SELECT 1
+    FROM employees e2
+    WHERE e1.deptid = e2.deptid AND e1.empid <> e2.empid
+) ORDER BY 2;
+
 -- Dept having more than 3 employees
 SELECT deptid 
 FROM employees
