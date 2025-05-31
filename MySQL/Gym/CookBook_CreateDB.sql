@@ -1,5 +1,6 @@
 DROP DATABASE IF EXISTS `sql_CookBook`;
 CREATE DATABASE `sql_CookBook`;
+
 USE `sql_CookBook`;
 
 SET NAMES utf8 ;
