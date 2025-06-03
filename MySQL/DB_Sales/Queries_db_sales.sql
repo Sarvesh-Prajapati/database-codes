@@ -58,229 +58,123 @@ FROM leads L JOIN sales S ON L.cust_id = S.cust_id
 GROUP BY L.region, L.state
 WITH ROLLUP;
 
+-- 3. Trend of monthly leads generated
 
--- 2. Write a query to generate a sales report which must contain following info (grouped by first two columns of the report 'sales year' and 'sales month' extracted from the lead_date column of leads table):
+-- 4. Quota attainment per salesperson (i.e. sales target reached per salesperson)
+-- 5. Salespersons who couldn't make a sale
 
--- ----- 1. Sales year
--- ----- 2. Sales month
--- ----- 3. Number of leads
--- ----- 4. Percent growth in no. of leads
--- ----- 5. Minimum sales amount
--- ----- 6. Maximum sales amount
--- ----- 7. Salesperson ( 'sp_assigned' column of leads table) who made maximum sales
--- ----- 8. Salesperson who made minimum sales
--- ----- 9. Category of maximum sales
--- ----- 10. City with highest average sales
--- ----- 11. State with highest average sales
--- ----- 12. Region with highest average sales
+-- 6. Write a REPORT QUERY to generate the following single report:
+-- ---- GROUPED BY lead year, lead month ---> no. of leads generated, % growth of leads over the months
+-- ---- GROUPED BY order year, order month ---> monthly sales, min sales amt, min sales' category, min sales' salesperson, min sales' city, min sales' state, min sales' region,
+-- -------- max sales amt, max sales' category, max sales' salesperson, max sales' city, max sales' state, max sales' region
 
-WITH CTE_lead_base AS (
-    SELECT 
-        cust_id
-        , sp_assigned
-        , city
-        , state
-        , region
-        , lead_date
-        , YEAR(lead_date) AS sales_year
-        , MONTH(lead_date) AS sales_month
-    FROM leads
+WITH CTE_main AS(
+SELECT 
+    l.cust_id AS cust_id
+    , l.sp_assigned AS sp_assigned
+    , l.city AS city
+    , l.state AS state
+    , l.region AS region
+    , s.category AS category
+    , s.sales_amt AS sales_amt        
+    , l.lead_date AS lead_date        
+    , YEAR(l.lead_date) AS lead_year
+    , MONTH(l.lead_date) AS lead_month
+    , s.order_date AS order_date
+    , YEAR(s.order_date) AS order_year
+    , MONTH(s.order_date) AS order_month
+    , ROUND(AVG(sales_amt) OVER(PARTITION BY YEAR(s.order_date), MONTH(s.order_date), l.city), 2) AS avg_city_sales
+    , ROUND(AVG(sales_amt) OVER(PARTITION BY YEAR(s.order_date), MONTH(s.order_date), l.state), 2) AS avg_state_sales
+    , ROUND(AVG(sales_amt) OVER(PARTITION BY YEAR(s.order_date), MONTH(s.order_date), l.region), 2) AS avg_region_sales
+    , MAX(s.sales_amt) OVER(PARTITION BY YEAR(s.order_date), MONTH(s.order_date)) AS max_sales_amt
+    , MIN(s.sales_amt) OVER(PARTITION BY YEAR(s.order_date), MONTH(s.order_date)) AS min_sales_amt        
+FROM leads l LEFT JOIN sales s ON l.cust_id = s.cust_id
 ),
-CTE_lead_counts AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , COUNT(cust_id) AS num_leads
-    FROM CTE_lead_base
-    GROUP BY sales_year, sales_month
-    ORDER BY sales_year, sales_month
+CTE_lead_count AS (
+SELECT
+    lead_year
+    , lead_month
+    , COUNT(cust_id) AS num_leads
+FROM CTE_main
+GROUP BY lead_year, lead_month
+ORDER BY lead_year, lead_month
 ),
 CTE_lead_growth AS (
-    SELECT *
-        -- , sales_year
-        -- , sales_month
-        -- , num_leads
-        , ROUND(COALESCE((num_leads - LAG(num_leads) OVER()) / LAG(num_leads) OVER() * 100, 0), 2) AS pct_lead_growth
-    FROM CTE_lead_counts
+SELECT
+    ROW_NUMBER() OVER() AS row_num
+    , lc.lead_year
+    , lc.lead_month
+    , lc.num_leads
+    , ROUND(COALESCE((lc.num_leads - LAG(lc.num_leads) OVER()) / LAG(lc.num_leads) OVER() * 100, 0), 2) AS pct_lead_growth
+FROM CTE_lead_count lc LEFT JOIN CTE_main cm ON lc.lead_year = cm.lead_year AND lc.lead_month = cm.lead_month
+GROUP BY lc.lead_year, lc.lead_month
 ),
-CTE_sales_joined AS (
-    SELECT 
-        lb.sales_year
-        , lb.sales_month
-        , lb.city
-        , lb.state
-        , lb.region
-        , s.sp_assigned
-        , s.category
-        , s.sales_amt
-    FROM CTE_lead_base lb JOIN sales s ON lb.cust_id = s.cust_id
-),
-CTE_aggregates AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , MIN(sales_amt) AS min_sales_amt
-        , MAX(sales_amt) AS max_sales_amt
-    FROM CTE_sales_joined
-    GROUP BY sales_year, sales_month
-),
-CTE_sales_by_person AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , sp_assigned
-        , SUM(sales_amt) AS total_sales
-    FROM CTE_sales_joined
-    GROUP BY sales_year, sales_month, sp_assigned
-),
-CTE_sales_by_category AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , category
-        , SUM(sales_amt) AS total_sales
-    FROM CTE_sales_joined
-    GROUP BY sales_year, sales_month, category
-),
-CTE_city_avg_sales AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , city
-        , AVG(sales_amt) AS avg_sales
-    FROM CTE_sales_joined
-    GROUP BY sales_year, sales_month, city
-),
-CTE_state_avg_sales AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , state
-        , AVG(sales_amt) AS avg_sales
-    FROM CTE_sales_joined
-    GROUP BY sales_year, sales_month, state
-),
-CTE_region_avg_sales AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , region
-        , AVG(sales_amt) AS avg_sales
-    FROM CTE_sales_joined
-    GROUP BY sales_year, sales_month, region
-),
-CTE_max_min_sp AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , MAX(total_sales) AS max_sp_sales
-        , MIN(total_sales) AS min_sp_sales
-    FROM CTE_sales_by_person
-    GROUP BY sales_year, sales_month
-),
-CTE_sp_with_extreme_sales AS (
-    SELECT 
-        sbp.sales_year
-        , sbp.sales_month
-        , MAX(CASE WHEN sbp.total_sales = mm.max_sp_sales THEN sbp.sp_assigned END) AS max_sales_sp
-        , MAX(CASE WHEN sbp.total_sales = mm.min_sp_sales THEN sbp.sp_assigned END) AS min_sales_sp
-    FROM CTE_sales_by_person sbp
-    JOIN CTE_max_min_sp mm 
-        ON sbp.sales_year = mm.sales_year AND sbp.sales_month = mm.sales_month
-    GROUP BY sbp.sales_year, sbp.sales_month
-),
-CTE_max_category AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , category
-    FROM (
-        SELECT 
-            sales_year
-            , sales_month
-            , category
-            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY total_sales DESC) AS rnk
-        FROM CTE_sales_by_category
-    ) ranked
-    WHERE rnk = 1
-),
-CTE_city_with_highest_avg AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , city
-    FROM (
-        SELECT 
-            sales_year
-            , sales_month
-            , city
-            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
-        FROM CTE_city_avg_sales
-    ) ranked
-    WHERE rnk = 1
-),
-CTE_state_with_highest_avg AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , state
-    FROM (
-        SELECT 
-            sales_year
-            , sales_month
-            , state
-            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
-        FROM CTE_state_avg_sales
-    ) ranked
-    WHERE rnk = 1
-),
-CTE_region_with_highest_avg AS (
-    SELECT 
-        sales_year
-        , sales_month
-        , region
-    FROM (
-        SELECT 
-            sales_year
-            , sales_month
-            , region
-            , RANK() OVER (PARTITION BY sales_year, sales_month ORDER BY avg_sales DESC) AS rnk
-        FROM CTE_region_avg_sales
-    ) ranked
-    WHERE rnk = 1
+CTE_sales AS (
+SELECT
+	ROW_NUMBER() OVER() AS row_num
+	, order_year
+    , order_month
+    , SUM(sales_amt) AS monthly_sales
+    , MIN(min_sales_amt) AS min_sales_amt
+    , MAX(CASE WHEN sales_amt = min_sales_amt THEN category END) AS min_sales_cat
+	, MAX(CASE WHEN sales_amt = min_sales_amt THEN sp_assigned END) AS min_sales_sp
+    , MAX(CASE WHEN sales_amt = min_sales_amt THEN city END) AS min_sales_city
+    , MAX(CASE WHEN sales_amt = min_sales_amt THEN state END) AS min_sales_state
+    , MAX(CASE WHEN sales_amt = min_sales_amt THEN region END) AS min_sales_region
+    , MAX(max_sales_amt) AS max_sales_amt
+    , MAX(CASE WHEN sales_amt = max_sales_amt THEN category END) AS max_sales_cat
+    , MAX(CASE WHEN sales_amt = max_sales_amt THEN sp_assigned END) AS max_sales_sp
+    , MAX(CASE WHEN sales_amt = max_sales_amt THEN city END) AS max_sales_city    
+    , MAX(CASE WHEN sales_amt = max_sales_amt THEN state END) AS max_sales_state	
+    , MAX(CASE WHEN sales_amt = max_sales_amt THEN region END) AS max_sales_region
+FROM CTE_main
+WHERE order_year IS NOT NULL AND order_month IS NOT NULL
+GROUP BY order_year, order_month
 )
-SELECT 
-    lg.sales_year
-    , lg.sales_month
-    , lg.num_leads
-    , lg.pct_lead_growth
-    , ag.min_sales_amt
-    , ag.max_sales_amt
-    , spx.max_sales_sp
-    , spx.min_sales_sp
-    , mc.category AS max_sales_category
-    , ca.city AS highest_avg_city
-    , sa.state AS highest_avg_state
-    , ra.region AS highest_avg_region
-FROM CTE_lead_growth lg
-LEFT JOIN CTE_aggregates ag ON lg.sales_year = ag.sales_year AND lg.sales_month = ag.sales_month
-LEFT JOIN CTE_sp_with_extreme_sales spx ON lg.sales_year = spx.sales_year AND lg.sales_month = spx.sales_month
-LEFT JOIN CTE_max_category mc ON lg.sales_year = mc.sales_year AND lg.sales_month = mc.sales_month
-LEFT JOIN CTE_city_with_highest_avg ca ON lg.sales_year = ca.sales_year AND lg.sales_month = ca.sales_month
-LEFT JOIN CTE_state_with_highest_avg sa ON lg.sales_year = sa.sales_year AND lg.sales_month = sa.sales_month
-LEFT JOIN CTE_region_with_highest_avg ra ON lg.sales_year = ra.sales_year AND lg.sales_month = ra.sales_month
-ORDER BY lg.sales_year, lg.sales_month;
+SELECT
+	clg.lead_year
+    , clg.lead_month
+    , clg.num_leads
+    , clg.pct_lead_growth
+    , cs.order_year
+    , cs.order_month
+    , cs.monthly_sales
+    , cs.min_sales_amt
+    , cs.min_sales_cat
+    , cs.min_sales_sp
+    , cs.min_sales_city
+    , cs.min_sales_state
+    , cs.min_sales_region
+    , cs.max_sales_amt
+    , cs.max_sales_cat
+    , cs.max_sales_sp
+    , cs.max_sales_city
+    , cs.max_sales_state
+    , cs.max_sales_region
+FROM CTE_lead_growth clg RIGHT JOIN CTE_sales cs ON clg.row_num = cs.row_num ;
 
-+------------+-------------+-----------+-----------------+---------------+---------------+--------------+--------------+--------------------+------------------+-------------------+--------------------+
-| sales_year | sales_month | num_leads | pct_lead_growth | min_sales_amt | max_sales_amt | max_sales_sp | min_sales_sp | max_sales_category | highest_avg_city | highest_avg_state | highest_avg_region |
-+------------+-------------+-----------+-----------------+---------------+---------------+--------------+--------------+--------------------+------------------+-------------------+--------------------+
-|       2022 |           1 |       134 |           0.00  |        414.75 |       1797.06 | Toby         | Kelly        | Copy Paper         | San Antonio      | Delaware          | East               |
-|       2022 |           2 |       120 |         -10.45  |        400.00 |       3743.46 | Michael      | Meredith     | Copy Paper         | Columbia         | Tennessee         | South              |
-|       2022 |           3 |       123 |           2.50  |        400.00 |       7040.73 | Michael      | Angela       | Copy Paper         | San Francisco    | Michigan          | West               |
-|       2022 |           4 |       126 |           2.44  |        403.00 |       1511.35 | Pam          | Michael      | Copy Paper         | Oceanside        | Massachusetts     | South              |
-|       2022 |           5 |       157 |          24.60  |        402.00 |       3782.78 | Ryan         | Andy         | Copy Paper         | Dublin           | Louisiana         | East               |
-|       2022 |           6 |       136 |         -13.38  |        408.02 |       8403.96 | Toby         | Andy         | Copy Paper         | Louisville       | Kentucky          | South              |
-+------------+-------------+-----------+-----------------+---------------+---------------+--------------+--------------+--------------------+------------------+-------------------+--------------------+
+-- OUTPUT: 
++-----------+------------+-----------+-----------------+------------+-------------+---------------+---------------+---------------+--------------+----------------+-----------------+------------------+---------------+---------------+--------------+----------------+-----------------+------------------+
+| lead_year | lead_month | num_leads | pct_lead_growth | order_year | order_month | monthly_sales | min_sales_amt | min_sales_cat | min_sales_sp | min_sales_city | min_sales_state | min_sales_region | max_sales_amt | max_sales_cat | max_sales_sp | max_sales_city | max_sales_state | max_sales_region |
++-----------+------------+-----------+-----------------+------------+-------------+---------------+---------------+---------------+--------------+----------------+-----------------+------------------+---------------+---------------+--------------+----------------+-----------------+------------------+
+|      2022 |          1 |       134 |            0.00 |       2022 |           1 |      11339.09 |        418.00 | Copy Paper    | Meredith     | Everett        | Massachusetts   | East             |       1326.01 | Envelopes     | Angela       | Henderson      | Kentucky        | South            |
+|      2022 |          2 |       120 |          -10.45 |       2022 |           2 |      40083.99 |        400.00 | Envelopes     | Ryan         | Los Angeles    | California      | West             |       3743.46 | Copy Paper    | Dwight       | Columbia       | Tennessee       | South            |
+|      2022 |          3 |       123 |            2.50 |       2022 |           3 |      46770.51 |        400.00 | Copy Paper    | Andy         | Dallas         | Texas           | Central          |       2229.53 | Envelopes     | Kelly        | San Francisco  | California      | West             |
+|      2022 |          4 |       126 |            2.44 |       2022 |           4 |      48374.90 |        428.27 | Copy Paper    | Andy         | Los Angeles    | California      | West             |       7040.73 | Copy Paper    | Andy         | San Francisco  | California      | West             |
+|      2022 |          5 |       157 |           24.60 |       2022 |           5 |      37508.64 |        403.00 | Copy Paper    | Kelly        | San Diego      | California      | West             |       2696.49 | Copy Paper    | Michael      | Philadelphia   | Pennsylvania    | East             |
+|      2022 |          6 |       136 |          -13.38 |       2022 |           6 |      61564.99 |        402.00 | Copy Paper    | Toby         | Dearborn       | Michigan        | Central          |       8403.96 | Copy Paper    | Toby         | Louisville     | Kentucky        | South            |
+|      NULL |       NULL |      NULL |            NULL |       2022 |           7 |      18040.85 |        418.82 | Envelopes     | Ryan         | San Francisco  | California      | West             |       2015.22 | Copy Paper    | Kelly        | Franklin       | Tennessee       | South            |
++-----------+------------+-----------+-----------------+------------+-------------+---------------+---------------+---------------+--------------+----------------+-----------------+------------------+---------------+---------------+--------------+----------------+-----------------+------------------+
+
+
+
+
+
+
+
+
+
+
 
 
 
