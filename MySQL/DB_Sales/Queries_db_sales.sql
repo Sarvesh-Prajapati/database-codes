@@ -111,13 +111,13 @@ GROUP BY lc.lead_year, lc.lead_month
 ),
 CTE_sales AS (
 SELECT
-	ROW_NUMBER() OVER() AS row_num
-	, order_year
+    ROW_NUMBER() OVER() AS row_num
+    , order_year
     , order_month
     , SUM(sales_amt) AS monthly_sales
     , MIN(min_sales_amt) AS min_sales_amt
     , MAX(CASE WHEN sales_amt = min_sales_amt THEN category END) AS min_sales_cat
-	, MAX(CASE WHEN sales_amt = min_sales_amt THEN sp_assigned END) AS min_sales_sp
+    , MAX(CASE WHEN sales_amt = min_sales_amt THEN sp_assigned END) AS min_sales_sp
     , MAX(CASE WHEN sales_amt = min_sales_amt THEN city END) AS min_sales_city
     , MAX(CASE WHEN sales_amt = min_sales_amt THEN state END) AS min_sales_state
     , MAX(CASE WHEN sales_amt = min_sales_amt THEN region END) AS min_sales_region
@@ -132,7 +132,7 @@ WHERE order_year IS NOT NULL AND order_month IS NOT NULL
 GROUP BY order_year, order_month
 )
 SELECT
-	clg.lead_year
+    clg.lead_year
     , clg.lead_month
     , clg.num_leads
     , clg.pct_lead_growth
