@@ -355,3 +355,96 @@ ORDER BY state;
 |       2022 | Wisconsin            | Franklin         |    0.00 |     0.00 |  908.00 |     0.00 |    0.00 |    0.00 |    0.00 |
 |       2022 | Wisconsin            | Milwaukee        |    0.00 |     0.00 |    0.00 |     0.00 |  420.38 |    0.00 |    0.00 |
 +------------+----------------------+------------------+---------+----------+---------+----------+---------+---------+---------+
+
+-- 8. Create a report for regional sales pivoted over months
+
+WITH CTE_sales_by_region AS (
+	SELECT
+        l.region AS region
+        , s.sales_amt AS sales_amt        
+        , s.order_date AS order_date
+        , YEAR(s.order_date) AS order_year
+	FROM leads l LEFT JOIN sales s ON l.cust_id = s.cust_id)
+SELECT
+	order_year
+    , region
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'January' THEN sales_amt ELSE 0 END) AS January
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'February' THEN sales_amt ELSE 0 END) AS February
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'March' THEN sales_amt ELSE 0 END) AS March
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'April' THEN sales_amt ELSE 0 END) AS April
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'May' THEN sales_amt ELSE 0 END) AS May
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'June' THEN sales_amt ELSE 0 END) AS June
+    , SUM(CASE WHEN MONTHNAME(order_date) = 'July' THEN sales_amt ELSE 0 END) AS July
+FROM CTE_sales_by_region 
+WHERE order_year IS NOT NULL
+GROUP BY order_year, region
+ORDER BY region;
+
+-- OUTPUT:
++------------+---------+---------+----------+----------+----------+----------+----------+---------+
+| order_year | region  | January | February | March    | April    | May      | June     | July    |
++------------+---------+---------+----------+----------+----------+----------+----------+---------+
+|       2022 | Central | 1924.02 |  9675.76 | 13472.15 |  5398.43 |  5327.03 | 10353.97 | 1410.52 |
+|       2022 | East    | 1543.06 | 15208.27 | 13358.25 | 11691.25 | 10112.39 | 18233.50 | 8433.30 |
+|       2022 | South   | 3305.63 |  7299.68 |  8424.64 | 12003.04 |  6124.66 | 11355.86 | 4400.30 |
+|       2022 | West    | 4566.38 |  7900.28 | 11515.47 | 19282.18 | 15944.56 | 21621.66 | 3796.73 |
++------------+---------+---------+----------+----------+----------+----------+----------+---------+
+
+-- 9. Create a report for monthly sales pivoted over categories and include a summary row (i.e. WITH ROLLUP)
+
+WITH CTE_sales_by_category AS (
+SELECT
+    MONTHNAME(order_date) AS sale_month
+    , category
+    , sales_amt
+FROM sales) 
+SELECT
+    IF(GROUPING(sale_month), '*** TOTAL ***', sale_month) AS sale_month
+    , SUM(CASE WHEN category = 'Envelopes' THEN sales_amt ELSE 0 END) AS Envelope_sales
+    , SUM(CASE WHEN category = 'Letterhead' THEN sales_amt ELSE 0 END) AS Letterhead_sales
+    , SUM(CASE WHEN category = 'Copy Paper' THEN sales_amt ELSE 0 END) AS CopyPaper_sales
+FROM CTE_sales_by_category GROUP BY sale_month WITH ROLLUP;
+
+-- OUTPUT:
++---------------+----------------+------------------+-----------------+
+| sale_month    | Envelope_sales | Letterhead_sales | CopyPaper_sales |
++---------------+----------------+------------------+-----------------+
+| April         |       15216.49 |          9427.52 |        23730.89 |
+| February      |       11368.54 |          6279.35 |        22436.10 |
+| January       |        4251.59 |          2033.08 |         5054.42 |
+| July          |        4593.82 |          5813.76 |         7633.27 |
+| June          |       10212.92 |         20317.29 |        31034.78 |
+| March         |       15083.89 |          7880.14 |        23806.48 |
+| May           |       12267.72 |          7190.77 |        18050.15 |
+| *** TOTAL *** |       72994.97 |         58941.91 |       131746.09 |
++---------------+----------------+------------------+-----------------+
+
+-- Ordering the above output CHRONOLOGICALLY by months:
+
+WITH CTE_sales_by_category AS (
+SELECT
+    MONTHNAME(order_date) AS sale_month
+    , category
+    , sales_amt
+FROM sales) 
+SELECT
+    IF(GROUPING(sale_month), '*** TOTAL ***', sale_month) AS sale_month_name
+    , SUM(CASE WHEN category = 'Envelopes' THEN sales_amt ELSE 0 END) AS Envelope_sales
+    , SUM(CASE WHEN category = 'Letterhead' THEN sales_amt ELSE 0 END) AS Letterhead_sales
+    , SUM(CASE WHEN category = 'Copy Paper' THEN sales_amt ELSE 0 END) AS CopyPaper_sales
+FROM CTE_sales_by_category GROUP BY sale_month WITH ROLLUP
+ORDER BY FIELD(sale_month, 'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER');
+
+-- OUTPUT:
++-----------------+----------------+------------------+-----------------+
+| sale_month_name | Envelope_sales | Letterhead_sales | CopyPaper_sales |
++-----------------+----------------+------------------+-----------------+
+| *** TOTAL ***   |       72994.97 |         58941.91 |       131746.09 |
+| January         |        4251.59 |          2033.08 |         5054.42 |
+| February        |       11368.54 |          6279.35 |        22436.10 |
+| March           |       15083.89 |          7880.14 |        23806.48 |
+| April           |       15216.49 |          9427.52 |        23730.89 |
+| May             |       12267.72 |          7190.77 |        18050.15 |
+| June            |       10212.92 |         20317.29 |        31034.78 |
+| July            |        4593.82 |          5813.76 |         7633.27 |
++-----------------+----------------+------------------+-----------------+
