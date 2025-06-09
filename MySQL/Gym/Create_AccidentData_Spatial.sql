@@ -33,7 +33,9 @@ Weather_Conditions VARCHAR(25),
 Vehicle_Type VARCHAR(40)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
-CREATE INDEX idx_accident_timestamp ON accident_data (Accident_Timestamp);
+-- CREATE INDEX idx_accident_timestamp ON accident_data (Accident_Timestamp);
+-- DROP INDEX idx_accident_timestamp ON accident_data;
+-- SHOW INDEX FROM accident_data;  -- check the indexes active on the table
 
 SELECT * FROM accident_data;
 
