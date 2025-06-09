@@ -37,7 +37,7 @@ CREATE INDEX idx_accident_timestamp ON accident_data (Accident_Timestamp);
 
 SELECT * FROM accident_data;
 
-TRUNCATE sql_forda.accident_data;
+-- TRUNCATE sql_forda.accident_data;
 
 -- -------- LOAD THE ACCIDENT DATA FROM THE CSV:
 LOAD DATA INFILE 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Uploads\\AccidentData.csv' 
@@ -45,7 +45,7 @@ INTO TABLE accident_data
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES;
 
--- SELECT * FROM accident_data;
+SELECT * FROM accident_data;
 
 ALTER TABLE accident_data ADD COLUMN Lat_Long POINT;   -- adding new col, of POINT data type, to store spatial values
 UPDATE accident_data SET Lat_Long = ST_GeomFromText(REPLACE(LatLong, "'", ''));    -- moving str vals of 'LatLong' (of VARCHAR type e.g. 'POINT(10.123 -10.123)') to 'Lat_Long' (of POINT type) 
@@ -60,7 +60,7 @@ SELECT * FROM accident_data;    -- shows 'Lat_long' vals as BLOB objects as it s
 
 -- One can extract the Lat and Long vals from BLOB geometry value as follows:
 SELECT
-	accident_id AS Acc_ID
+    accident_id AS Acc_ID
     , ST_X(Lat_Long) AS Latitude        -- ST_X for x-coordinate or Latitude
     , ST_Y(Lat_Long) AS Longitude       -- ST_Y for y-coordinate or Longitude
 FROM accident_data WHERE accident_id = 1;
