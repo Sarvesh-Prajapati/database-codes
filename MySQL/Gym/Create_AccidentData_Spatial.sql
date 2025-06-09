@@ -1,4 +1,4 @@
--- When loading a huge file ('AccidentData.csv' here), it's better to first load a small subset of it (e.g. 'AccidentDataTEST.csv' present in the LHS in the tree hierarchy)
+-- When loading a huge file ('AccidentData.csv' here), it's better to first load a small subset of it.
 -- So, 'AccidentDataTEST.csv' with 30 rows was created, opened, & its 2 columns 'Accident_Date' & 'Time' were combined into a single column 'Accident_Timestamp'. Saved as CSV 'AccidentDataTEST_GEO.csv'.
 -- File 'AccidentDataTEST_GEO.csv' was then opened, & its 2 columns 'Latitude' & 'Longitude' were combined as col 'LatLong' as VARCHAR (basically, string type) because direct import of spatial info
 -- is not possible in MySQL. Then, 'Latitude' & 'Longitude' cols were deleted from CSV. Next, after saving changes, all 30 rows of 'AccidentDataTEST_GEO.csv' were loaded into 
