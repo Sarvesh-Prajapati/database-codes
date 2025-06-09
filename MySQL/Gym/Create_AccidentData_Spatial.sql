@@ -64,7 +64,7 @@ SELECT * FROM accident_data;    -- shows 'Lat_long' vals as BLOB objects as it s
 SELECT ST_AsText(Lat_Long) AS ReadablePoint FROM accident_data;   -- Displays the BLOB spatial info as readable text
 
 SELECT
-	accident_id AS Acc_ID
+    accident_id AS Acc_ID
     , ST_X(Lat_Long) AS Latitude        -- ST_X for x-coordinate or Latitude
     , ST_Y(Lat_Long) AS Longitude       -- ST_Y for y-coordinate or Longitude
 FROM accident_data WHERE accident_id = 1;
