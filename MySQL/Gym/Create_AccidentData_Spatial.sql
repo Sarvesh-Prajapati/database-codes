@@ -36,6 +36,10 @@ Vehicle_Type VARCHAR(40)
 -- CREATE INDEX idx_accident_timestamp ON accident_data (Accident_Timestamp);
 -- DROP INDEX idx_accident_timestamp ON accident_data;
 -- SHOW INDEX FROM accident_data;  -- check the indexes active on the table
+-- ------ above query on index info modified to:
+SELECT INDEX_NAME, COLUMN_NAME, NON_UNIQUE, SEQ_IN_INDEX, INDEX_TYPE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = 'sql_forda' AND TABLE_NAME = 'accident_data';
 
 SELECT * FROM accident_data;
 
