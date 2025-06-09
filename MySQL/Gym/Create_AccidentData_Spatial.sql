@@ -17,8 +17,8 @@ Accident_Timestamp TIMESTAMP,
 Day_Of_Week VARCHAR(10),
 Junction_Control VARCHAR(100),
 Junction_Detail VARCHAR(100),
-Accident_Severity VARCHAR(20),            -- slight, serious, fatal
-LatLong VARCHAR(50),                      -- CSV file has 'LatLong' vals as string (e.g. 'POINT(10.123 -10.123)') so VARCHAR specified here; fixed below after loading data 
+Accident_Severity VARCHAR(20),             -- slight, serious, fatal
+LatLong VARCHAR(50),                       -- CSV file has 'LatLong' vals as string (e.g. 'POINT(10.123 -10.123)') so VARCHAR specified here; fixed below after loading data 
 Light_Conditions VARCHAR(50),
 Local_Authority_District VARCHAR(50),
 Carriageway_Hazards VARCHAR(100),
@@ -33,7 +33,9 @@ Weather_Conditions VARCHAR(25),
 Vehicle_Type VARCHAR(40)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
--- CREATE INDEX idx_accident_timestamp ON accident_data (Accident_ID);
+CREATE INDEX idx_accident_timestamp ON accident_data (Accident_Timestamp);
+
+SELECT * FROM accident_data;
 
 TRUNCATE sql_forda.accident_data;
 
