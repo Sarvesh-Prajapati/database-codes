@@ -53,7 +53,7 @@ FROM JSON_TABLE(
 |   10 | Garey      | Fernando | gfernando9@columbia.edu |
 +------+------------+----------+-------------------------+
 
--- Now that the query above produced the JSON data in tabluar form as desired, load that result into table 'people':
+-- Now that the above query produced the JSON data in tabluar form as desired, load that result into table 'people':
   
 INSERT INTO people (id, first_name, last_name, email)
 SELECT *
