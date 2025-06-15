@@ -1,6 +1,6 @@
 USE sql_ForDA;
 
--- -------------------- Step 1: Create the target table
+-- -------------------- Step 1: Create target table
 DROP TABLE IF EXISTS people;
 CREATE TABLE people (
   id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
