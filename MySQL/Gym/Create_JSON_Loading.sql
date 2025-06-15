@@ -16,7 +16,7 @@ SHOW VARIABLES LIKE 'secure_file_priv';  -- returns local path where the JSON fi
 -- Load the JSON file into a session variable using LOAD_FILE() fn :
 SET @json_data = LOAD_FILE('C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/people.json');
 
--- Check if the content was loaded (optional)
+-- Check if content was loaded (optional)
 SELECT LEFT(@json_data, 1000);  -- Check first 1000 chars
 
 -- -------------------- Step 3: Populate the 'people' table using JSON_TABLE
