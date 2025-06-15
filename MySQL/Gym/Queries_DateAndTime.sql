@@ -12,8 +12,10 @@ SELECT DATEDIFF('2025-05-10', '2025-05-01') AS diff_days; -- 9
 SELECT DATEDIFF('2025-05-01', '2025-05-10') AS result;  --  -9
 
 -- Find overdue invoices
-SELECT invoice_id, due_date,
-       DATEDIFF(CURDATE(), due_date) AS days_overdue
+SELECT
+    invoice_id
+    , due_date
+    , DATEDIFF(CURDATE(), due_date) AS days_overdue
 FROM invoices
 WHERE DATEDIFF(CURDATE(), due_date) > 0;
 
@@ -27,8 +29,11 @@ JOIN logins l ON u.user_id = l.user_id
 WHERE DATEDIFF(l.login_date, u.registration_date) <= 7;
 
 -- Compare two date columns
-SELECT task_id, start_date, end_date,
-       DATEDIFF(end_date, start_date) AS duration
+SELECT
+    task_id
+    , start_date
+    , end_date
+    , DATEDIFF(end_date, start_date) AS duration
 FROM tasks;
 
 
@@ -43,9 +48,10 @@ SELECT TIMESTAMPDIFF(YEAR, '2010-06-01', '2025-05-01') AS diff_years;  -- 14
 SELECT TIMESTAMPDIFF(MONTH, '2023-01-15', '2025-05-01') AS diff_months;  -- 27
 
 -- Membership expiry warning (less than 3 months left)
-SELECT member_id, 
-       membership_end, 
-       TIMESTAMPDIFF(MONTH, CURDATE(), membership_end) AS months_left
+SELECT
+	member_id
+	, membership_end
+	, TIMESTAMPDIFF(MONTH, CURDATE(), membership_end) AS months_left
 FROM some_members_table
 WHERE TIMESTAMPDIFF(MONTH, CURDATE(), membership_end) < 3;
 
