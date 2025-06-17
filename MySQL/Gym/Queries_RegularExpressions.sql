@@ -56,7 +56,7 @@ SELECT * FROM REGEXP_TABLE WHERE FULLNAME REGEXP '^[A-Za-z]+( [A-Za-z]+){2,}$'; 
 
 -- first letter capital followed by 1 or more lowercase letter, then MAYBE (or MAY NOT BE) a space followed by 1 upper letter 
 -- followed by 1 or more lower letters (BASICALLY, first and last names capitalized)
-SELECT * FROM REGEXP_TABLE WHERE FULLNAME REGEXP '^[A-Z][a-z]+( [A-Z][a-z]+)?$';  
+SELECT * FROM REGEXP_TABLE WHERE FULLNAME REGEXP '^[A-Z][a-z]+( [A-Z][a-z]+)?$'; 
 
 
 
