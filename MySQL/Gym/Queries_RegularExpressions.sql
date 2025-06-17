@@ -16,7 +16,7 @@ INSERT INTO REGEXP_TABLE VALUES
 (10, 'John',           'john@apple.com',       92000),
 (11, 'Tommy Lee Jones','tljones@yahoo.com',    94000);
 
--- REGEXP Queries
+-- REGEXP Example Queries
 
 SELECT * FROM REGEXP_TABLE WHERE EMAIL REGEXP '\\.com$';   -- all emails ending in .com
 SELECT * FROM REGEXP_TABLE WHERE EMAIL NOT REGEXP '\\.com$';  -- negation of above statement (all emails NOT ending in .com)
