@@ -1,6 +1,5 @@
 import mysql.connector
 
-
 ## Before running this script, run this in MySQL: SET GLOBAL local_infile = 1 ;
 ## After running this script, run this in MySQL: SET GLOBAL local_infile = 0 ;
 
@@ -17,7 +16,7 @@ config = {
 # Connect to MySQL
 conn = mysql.connector.connect(**config)
 # Instead of specifying the creds as in var 'config' above, following line works too :
-##conn = mysql.connector.connect(user='root', password="zaq1ZAQ!xsw2XSW@", host='localhost', database='datawarehouse')
+##conn = mysql.connector.connect(user='root', password="YOUR_PW_HERE", host='localhost', database='datawarehouse')
 cursor = conn.cursor()
 
 if conn.is_connected(): print('\nCONNECTION ESTABLISHED ....\n')
