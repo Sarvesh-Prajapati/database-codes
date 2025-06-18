@@ -8,6 +8,9 @@
 SET GLOBAL local_infile = 1;
 -- After the script has loaded the data, run (in MySQL) : 
 SET GLOBAL local_infile = 0;
+-- To check if the variable local_infile is ON/OFF, run : 
+SHOW VARIABLES LIKE 'local_infile';
+
 
 -- When not using the script file, we proceed to load data as usual as ahead:
 -- Paste the raw data files into the path returned by the topmost query and then run the following queries to load all the bronze tables:
