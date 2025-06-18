@@ -3,7 +3,7 @@
 -- SHOW VARIABLES LIKE 'secure_file_priv';  -- returns path where the files to be loaded must be present
 
 -- Since LOAD DATA INFILE can't be wrapped within a stored procedure in MySQL, a Python script can be created to load the files in MySQL; 
--- refer to the script file stored in the repo.
+-- refer to the script file 'script_bulk_load.py' stored in the 'Scripts' folder on LHS.
 -- Before running the script file run (in MySQL) : 
 SET GLOBAL local_infile = 1;
 -- After the script has loaded the data, run (in MySQL) : 
