@@ -13,7 +13,7 @@ CREATE TABLE bronze_crm_cust_info (
     cust_key VARCHAR(50),
     cust_firstname VARCHAR(50),
     cust_lastname VARCHAR(50),
-    cust_material_status VARCHAR(50),
+    cust_marital_status VARCHAR(50),
     cust_gender VARCHAR(50),
     cust_create_date DATE
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
