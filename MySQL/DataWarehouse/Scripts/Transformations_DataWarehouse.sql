@@ -268,8 +268,29 @@ FROM datawarehouse.bronze_erp_cust_az12 ;
 
 -- Load cleaned data into tbl 'silver_erp_cust_az12'
 
+-- ######################################### TRANSFORMING TBL 'bronze_erp_loc_a101' ###################################################
 
+-- Checking if 'cid' col is duplicated or has NULL or blank (no issues found after query run)
+SELECT cid, COUNT(cid) FROM datawarehouse.bronze_erp_loc_a101 GROUP BY cid HAVING COUNT(cid) > 1 OR cid IS NULL or CID = '';
 
+SELECT DISTINCT cntry, HEX(cntry) FROM datawarehouse.bronze_erp_loc_a101;  -- reveals HEX val 0D for carriage return (\r) in each val's end, & HEX val 20 (for space) in blanks
+
+-- tbl 'silver_crm_cust_info' has format of col 'cust_key' bit diff from col 'cid' of table 'bronze_erp_loc_a101'; resolved in MAIN QUERY
+SELECT cust_key FROM silver_crm_cust_info;
+
+-- MAIN QUERY
+SELECT
+	REPLACE(cid, '-', '') AS cid
+    , CASE
+		WHEN TRIM(REPLACE(REPLACE(cntry, CHAR(32), ''), CHAR(13), '')) = 'DE' THEN 'Germany' 
+		WHEN TRIM(REPLACE(REPLACE(cntry, CHAR(32), ''), CHAR(13), '')) IN ('US', 'USA', 'UnitedStates') THEN 'United States'
+        WHEN TRIM(REPLACE(REPLACE(cntry, CHAR(32), ''), CHAR(13), '')) IN ('UnitedKingdom') THEN 'United Kingdom'
+        WHEN TRIM(REPLACE(REPLACE(cntry, CHAR(32), ''), CHAR(13), '')) = '' OR cntry IS NULL THEN 'NA'
+        ELSE TRIM(REPLACE(REPLACE(cntry, CHAR(32), ''), CHAR(13), '')) 
+	  END AS cntry -- first replacing carriage return with '', then space with '', finally trimming
+FROM datawarehouse.bronze_erp_loc_a101 ;
+
+-- Load cleaned data into tbl 'silver_erp_loc_a101'
 
 
 
