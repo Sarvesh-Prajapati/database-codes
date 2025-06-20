@@ -292,7 +292,29 @@ FROM datawarehouse.bronze_erp_loc_a101 ;
 
 -- Load cleaned data into tbl 'silver_erp_loc_a101'
 
+-- ######################################### TRANSFORMING TBL 'bronze_erp_px_cat_g1v2' ###################################################
 
+-- Check duplications of 'id'
+SELECT id, count(id) FROM datawarehouse.bronze_erp_px_cat_g1v2 GROUP BY 1 HAVING count(id) > 1 ;
+
+SELECT
+	DISTINCT cat
+    , HEX(cat)
+    , subcat
+    , HEX(subcat)
+    , maintenance
+    , HEX(maintenance)    -- revealed that vals in 'maintenance' end in carraige return; fixed in MAIN QUERY
+FROM datawarehouse.bronze_erp_px_cat_g1v2;
+
+-- MAIN QUERY
+SELECT
+	id
+    , cat
+    , subcat
+    , TRIM(REPLACE(maintenance, CHAR(13), '')) AS maintenance
+FROM datawarehouse.bronze_erp_px_cat_g1v2;
+
+-- Load cleaned date into 'silver_erp_px_cat_g1v2'
 
 
 
