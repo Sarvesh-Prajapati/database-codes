@@ -1,3 +1,8 @@
+
+-- This is to be run in MySQL Command Line Client
+-- On command line type :  source some\path\to\this\script_file\goes_here\DataWarehouse_load_silver_shellScript.sql
+-- The \! echo statements inserted here after each silver tbl's load will print their msgs on command line
+
 DROP PROCEDURE IF EXISTS load_silver;
 
 DELIMITER //
