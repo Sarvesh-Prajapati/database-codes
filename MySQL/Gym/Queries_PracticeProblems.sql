@@ -400,7 +400,30 @@ ORDER BY cte.employee_id;
 
 -- ################################################################################################################################################################
 
+-- Write a query: "For each leap year between 1825 and 2025, find the count of months in that year that had 13th on a Friday."
+-- Output should have two columns :  LEAP_YEAR, MONTHS_COUNT
 
+WITH RECURSIVE year_months AS (
+    SELECT 1825 AS years, 1 AS months                         -- 1825, 1
+    UNION ALL
+    SELECT 
+        CASE WHEN months = 12 THEN years + 1 ELSE years END
+        , CASE WHEN months = 12 THEN 1 ELSE months + 1 END    -- output of above + this line :   1825, 2
+    FROM year_months
+    WHERE years < 2025 OR (years = 2025 AND months < 12)
+),
+leaps AS (
+    SELECT years, months
+    FROM year_months
+    WHERE (years % 4 = 0 AND years % 100 <> 0) OR (years % 400 = 0)
+),
+friday_13th AS (
+    SELECT years, months
+    FROM leaps
+    WHERE DAYOFWEEK(STR_TO_DATE(CONCAT(years, '-', LPAD(months, 2, '0'), '-13'), '%Y-%m-%d')) = 6
+)
+SELECT years AS LEAP_YEAR, COUNT(*) AS MONTHS_COUNT
+FROM friday_13th GROUP BY years ORDER BY years;
 
 
 
