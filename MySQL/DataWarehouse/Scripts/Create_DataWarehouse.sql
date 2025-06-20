@@ -65,10 +65,72 @@ CREATE TABLE bronze_erp_px_cat_g1v2 (
 
 -- ################## CREATING THE SILVER LAYER TABLES ##################
 
+DROP TABLE IF EXISTS silver_crm_cust_info;
+CREATE TABLE silver_crm_cust_info (
+    cust_id INT,
+    cust_key VARCHAR(50),
+    cust_firstname VARCHAR(50),
+    cust_lastname VARCHAR(50),
+    cust_marital_status VARCHAR(50),
+    cust_gender VARCHAR(50),
+    cust_create_date DATE,
+    dwh_create_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+DROP TABLE IF EXISTS silver_crm_prd_info;
+CREATE TABLE silver_crm_prd_info (
+    prd_id INT,
+    cat_id VARCHAR(50),   -- column added here after transformations applied in bronze tbl
+    prd_key VARCHAR(50),
+    prd_nm VARCHAR(50),
+    prd_cost INT,
+    prd_line VARCHAR(50),
+    prd_start_dt DATE,
+    prd_end_dt DATE,
+    dwh_create_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+DROP TABLE IF EXISTS silver_crm_sales_details;
+CREATE TABLE silver_crm_sales_details (
+    sls_ord_num  VARCHAR(50),
+    sls_prd_key  VARCHAR(50),
+    sls_cust_id  INT,
+    sls_order_dt DATE,   -- earlier it was INT, now DATE after transformations
+    sls_ship_dt  DATE,   -- earlier it was INT, now DATE after transformations
+    sls_due_dt   DATE,   -- earlier it was INT, now DATE after transformations
+    sls_sales    INT,
+    sls_quantity INT,
+    sls_price    INT,
+    dwh_create_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ;
+
+DROP TABLE IF EXISTS silver_erp_loc_a101 ;
+CREATE TABLE silver_erp_loc_a101 (
+    cid    VARCHAR(50),
+    cntry  VARCHAR(50),
+    dwh_create_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ;
+
+DROP TABLE IF EXISTS silver_erp_cust_az12 ;
+CREATE TABLE silver_erp_cust_az12 (
+    cid    VARCHAR(50),
+    bdate  DATE,
+    gen    VARCHAR(50),
+    dwh_create_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ;
+
+DROP TABLE IF EXISTS silver_erp_px_cat_g1v2 ;
+CREATE TABLE silver_erp_px_cat_g1v2 (
+    id           VARCHAR(50),
+    cat          VARCHAR(50),
+    subcat       VARCHAR(50),
+    maintenance  VARCHAR(50),
+    dwh_create_date DATETIME DEFAULT CURRENT_TIMESTAMP
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ;
 
 
 
 
 
 
--- ################## CREATING THE GOLD LAYER TABLES ##################
+-- ################## CREATING THE G LAYER TABLES ##################
