@@ -45,11 +45,11 @@ SELECT
 	, ci.cust_firstname AS first_name
 	, ci.cust_lastname AS last_name
 	, la.cntry AS country
-    , ci.cust_marital_status AS marital_status
-    , CASE
+	, ci.cust_marital_status AS marital_status
+	, CASE
 		WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
 		ELSE COALESCE(ca.gen, 'NA')
-	  END AS gender
+      END AS gender
 	, ca.bdate AS birthdate
 	, ci.cust_create_date AS create_date
 FROM silver_crm_cust_info ci
@@ -71,7 +71,7 @@ SELECT
     , CASE
 		WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
 		ELSE COALESCE(ca.gen, 'NA')
-	  END AS gender
+      END AS gender
 	, ca.bdate AS birthdate
 	, ci.cust_create_date AS create_date
 FROM silver_crm_cust_info ci
