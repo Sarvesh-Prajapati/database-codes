@@ -13,28 +13,28 @@ FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'silver_crm_cust_info';
 -- MAIN QUERY (updated below)
 SELECT
 	ci.cust_id
-	 , ci.cust_key
-	 , ci.cust_firstname
-	 , ci.cust_lastname
-	 , ci.cust_marital_status
-	 , ci.cust_gender       -- not same gender as ca.gen below (as per o/p)
-	 , ci.cust_create_date
-	 , ci.dwh_create_date   -- not needed in gold layer (end-user needn't know this col)
-	 , ca.bdate
-	 , ca.gen               -- not same gender as ci.cust_gender above (as per o/p); has to be decided which value to keep as gender
-	 , la.cntry
+	, ci.cust_key
+	, ci.cust_firstname
+	, ci.cust_lastname
+	, ci.cust_marital_status
+	, ci.cust_gender       -- not same gender as ca.gen below (as per o/p)
+	, ci.cust_create_date
+	, ci.dwh_create_date   -- not needed in gold layer (end-user needn't know this col)
+	, ca.bdate
+	, ca.gen               -- not same gender as ci.cust_gender above (as per o/p); has to be decided which value to keep as gender
+	, la.cntry
 FROM silver_crm_cust_info ci
 LEFT JOIN silver_erp_cust_az12 ca ON ci.cust_key = ca.cid
 LEFT JOIN silver_erp_loc_a101 la ON ci.cust_key = la.cid ;
 
 -- Since CRM data is the master data in this project, take CRM vals for gender as correct vals for 'ci.cust_gender' v/s 'NA'
 SELECT
-	 ci.cust_gender
-	 , ca.gen
-     , CASE
-		 WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
-		 ELSE COALESCE(ca.gen, 'NA')
-	   END AS new_gen
+	ci.cust_gender
+	, ca.gen
+	, CASE
+		WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
+		ELSE COALESCE(ca.gen, 'NA')
+	END AS new_gen
 FROM silver_crm_cust_info ci
 LEFT JOIN silver_erp_cust_az12 ca ON ci.cust_key = ca.cid
 LEFT JOIN silver_erp_loc_a101 la ON ci.cust_key = la.cid 
@@ -48,11 +48,11 @@ SELECT
 	, ci.cust_firstname AS first_name
 	, ci.cust_lastname AS last_name
 	, la.cntry AS country
-    , ci.cust_marital_status AS marital_status
-    , CASE
+	, ci.cust_marital_status AS marital_status
+	, CASE
 		WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
 		ELSE COALESCE(ca.gen, 'NA')
-	  END AS gender
+	END AS gender
 	, ca.bdate AS birthdate
 	, ci.cust_create_date AS create_date
 FROM silver_crm_cust_info ci
@@ -70,11 +70,11 @@ SELECT
 	, ci.cust_firstname AS first_name
 	, ci.cust_lastname AS last_name
 	, la.cntry AS country
-    , ci.cust_marital_status AS marital_status
-    , CASE
+	, ci.cust_marital_status AS marital_status
+	, CASE
 		WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
 		ELSE COALESCE(ca.gen, 'NA')
-	  END AS gender
+	END AS gender
 	, ca.bdate AS birthdate
 	, ci.cust_create_date AS create_date
 FROM silver_crm_cust_info ci
@@ -108,11 +108,11 @@ SELECT
 	ROW_NUMBER() OVER(ORDER BY pn.prd_start_dt, pn.prd_key) AS product_key   -- creating primary key (i.e. 'surrogate key' in gold layer)
 	, pn.prd_id AS product_id
 	, pn.prd_key AS product_number
-    , pn.prd_nm AS product_name
-    , pn.cat_id AS category_id
-    , pc.cat AS category
-    , pc.subcat AS subcategory
-    , pc.maintenance
+	, pn.prd_nm AS product_name
+	, pn.cat_id AS category_id
+	, pc.cat AS category
+	, pc.subcat AS subcategory
+	, pc.maintenance
 	, pn.prd_cost AS cost
 	, pn.prd_line AS product_line
 	, pn.prd_start_dt AS start_date
@@ -128,11 +128,11 @@ SELECT
 	ROW_NUMBER() OVER(ORDER BY pn.prd_start_dt, pn.prd_key) AS product_key
 	, pn.prd_id AS product_id
 	, pn.prd_key AS product_number
-    , pn.prd_nm AS product_name
-    , pn.cat_id AS category_id
-    , pc.cat AS category
-    , pc.subcat AS subcategory
-    , pc.maintenance
+	, pn.prd_nm AS product_name
+	, pn.cat_id AS category_id
+	, pc.cat AS category
+	, pc.subcat AS subcategory
+	, pc.maintenance
 	, pn.prd_cost AS cost
 	, pn.prd_line AS product_line
 	, pn.prd_start_dt AS start_date
