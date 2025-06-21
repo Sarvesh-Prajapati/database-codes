@@ -26,12 +26,12 @@ LEFT JOIN silver_erp_loc_a101 la ON ci.cust_key = la.cid ;
 
 -- Since CRM data is the master data in this project, take CRM vals for gender as correct vals for 'ci.cust_gender' v/s 'NA'
 SELECT
-	 ci.cust_gender
-	 , ca.gen
-     , CASE
-		 WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
-		 ELSE COALESCE(ca.gen, 'NA')
-	   END AS new_gen
+	ci.cust_gender
+	, ca.gen
+	, CASE
+		WHEN ci.cust_gender <> 'NA' THEN ci.cust_gender
+		ELSE COALESCE(ca.gen, 'NA')
+	END AS new_gen
 FROM silver_crm_cust_info ci
 LEFT JOIN silver_erp_cust_az12 ca ON ci.cust_key = ca.cid
 LEFT JOIN silver_erp_loc_a101 la ON ci.cust_key = la.cid 
