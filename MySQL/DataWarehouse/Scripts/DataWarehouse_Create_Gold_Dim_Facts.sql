@@ -141,9 +141,46 @@ LEFT JOIN silver_erp_px_cat_g1v2 pc ON pn.cat_id = pc.id
 WHERE prd_end_dt IS NULL;
 
 
--- ################################################### CREATING VIEW FOR FACTS ############################################################
+-- ################################################### CREATING VIEW FOR SALES FACTS ############################################################
 
+SELECT * FROM datawarehouse.silver_crm_sales_details;
 
+SELECT
+	GROUP_CONCAT(CONCAT('sd.', COLUMN_NAME) ORDER BY ORDINAL_POSITION SEPARATOR '\n , ') AS col_list    -- 'ORDER BY ORDINAL_POSITION' returns col in order of their order in table
+FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'silver_crm_sales_details';
+
+-- Copying and pasting the col list generate by above query into the query below (will later evolve to MAIN QUERY) : 
+SELECT
+	sd.sls_ord_num AS order_number
+	, pr.product_key
+	, cu.customer_key
+	, sd.sls_order_dt AS order_date
+	, sd.sls_ship_dt AS shipping_date
+	, sd.sls_due_dt AS due_date
+	, sd.sls_sales AS sales_amount
+	, sd.sls_quantity AS quantity
+	, sd.sls_price AS price
+	, sd.dwh_create_date         -- not needed for end user in gold layer so removed in MAIN QUERY ahead
+FROM datawarehouse.silver_crm_sales_details sd
+LEFT JOIN gold_dim_products pr ON sd.sls_prd_key = pr.product_number
+LEFT JOIN gold_dim_customers cu ON sd.sls_cust_id = cu.customer_id;
+
+-- MAIN QUERY : above stmt wrapped in a view
+DROP VIEW IF EXISTS gold_fact_sales;
+CREATE VIEW gold_fact_sales AS
+SELECT
+	sd.sls_ord_num AS order_number
+	, pr.product_key
+	, cu.customer_key
+	, sd.sls_order_dt AS order_date
+	, sd.sls_ship_dt AS shipping_date
+	, sd.sls_due_dt AS due_date
+	, sd.sls_sales AS sales_amount
+	, sd.sls_quantity AS quantity
+	, sd.sls_price AS price
+FROM datawarehouse.silver_crm_sales_details sd
+LEFT JOIN gold_dim_products pr ON sd.sls_prd_key = pr.product_number
+LEFT JOIN gold_dim_customers cu ON sd.sls_cust_id = cu.customer_id ;
 
 
 
