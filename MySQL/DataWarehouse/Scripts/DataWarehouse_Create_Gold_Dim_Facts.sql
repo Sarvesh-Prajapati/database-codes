@@ -1,5 +1,5 @@
 
--- ################################################### CREATING VIEW FOR DIM 'customers' ############################################################
+-- ################################################## CREATING VIEW FOR DIM 'customers' ############################################################
 
 -- Extracting columns of tbl 'silver_crm_cust_info' as list to be pasted in subsequent SELECT of MAIN QUERY :
 SELECT
