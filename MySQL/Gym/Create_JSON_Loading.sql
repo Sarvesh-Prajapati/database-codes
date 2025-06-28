@@ -9,7 +9,6 @@ CREATE TABLE people (
   email VARCHAR(30)
 );
 
-
 -- -------------------- Step 2: Load the JSON file into a session variable
 -- Make sure the JSON file is present inside the 'secure_file_priv' directory; check this directory using:
 SHOW VARIABLES LIKE 'secure_file_priv';  -- returns local path where the JSON file must be present
