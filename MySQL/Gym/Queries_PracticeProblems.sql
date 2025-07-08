@@ -2,20 +2,59 @@ USE sql_forda;
 
 -- ---------------------- tbl: ffill -- Forward filling -------------------
 SELECT * FROM ffill;
++------+------+
+| id   | dept |
++------+------+
+|    1 | IT   |
+|    2 | NULL |
+|    3 | NULL |
+|    4 | HR   |
+|    5 | NULL |
+|    6 | NULL |
++------+------+
 
 SET @var = NULL;
 SELECT *, @var := COALESCE(dept, @var) AS forward_filled_dept FROM ffill;
-
--- OR
-
++------+------+---------------------+
+| id   | dept | forward_filled_dept |
++------+------+---------------------+
+|    1 | IT   | IT                  |
+|    2 | NULL | IT                  |
+|    3 | NULL | IT                  |
+|    4 | HR   | HR                  |
+|    5 | NULL | HR                  |
+|    6 | NULL | HR                  |
++------+------+---------------------+
+	
+-- OR (another solution)
 SET @var = NULL;
 SELECT *, @var := IF(dept IS NULL, @var, dept) AS forward_filled_dept FROM ffill;
-
++------+------+---------------------+
+| id   | dept | forward_filled_dept |
++------+------+---------------------+
+|    1 | IT   | IT                  |
+|    2 | NULL | IT                  |
+|    3 | NULL | IT                  |
+|    4 | HR   | HR                  |
+|    5 | NULL | HR                  |
+|    6 | NULL | HR                  |
++------+------+---------------------+
+	
 -- another solution ( IMPORTANT )
 WITH cte AS
-( SELECT *, COUNT(dept) OVER(ORDER BY id) AS cnt FROM ffill -- COUNT here works as ranking fn on 'dept' col when ORDER BY is not as per 'dept'
+( SELECT *, COUNT(dept) OVER(ORDER BY id) AS cnt FROM ffill     -- COUNT here works as ranking fn on 'dept' col when ORDER BY is not as per 'dept'
 ) SELECT *, FIRST_VALUE(dept) OVER(PARTITION BY cnt ORDER by id) AS ffill_value FROM cte;
-
++------+------+-----+-------------+
+| id   | dept | cnt | ffill_value |
++------+------+-----+-------------+
+|    1 | IT   |   1 | IT          |
+|    2 | NULL |   1 | IT          |
+|    3 | NULL |   1 | IT          |
+|    4 | HR   |   2 | HR          |
+|    5 | NULL |   2 | HR          |
+|    6 | NULL |   2 | HR          |
++------+------+-----+-------------+
+	
 -- ------------------ Following identical queries are just for testing ------------
 -- SELECT *
 -- 	, COUNT(dept) OVER(ORDER BY id)
@@ -31,14 +70,50 @@ WITH cte AS
 WITH cte AS 
 (SELECT *, SUM(CASE WHEN dept IS NULL THEN 0 ELSE 1 END) OVER(ORDER BY id) AS flag FROM ffill)
 SELECT *, FIRST_VALUE(dept) OVER(PARTITION BY flag ORDER by id) AS ffill_value FROM cte;
-
++------+------+------+-------------+
+| id   | dept | flag | ffill_value |
++------+------+------+-------------+
+|    1 | IT   |    1 | IT          |
+|    2 | NULL |    1 | IT          |
+|    3 | NULL |    1 | IT          |
+|    4 | HR   |    2 | HR          |
+|    5 | NULL |    2 | HR          |
+|    6 | NULL |    2 | HR          |
++------+------+------+-------------+
+	
 -- still another solution (in case interested!)
 WITH cte AS
 (SELECT *, SUM(CASE WHEN dept IS NULL THEN 0 ELSE id END) OVER(ORDER BY id) AS flag FROM ffill) 
 SELECT * FROM cte LEFT JOIN (SELECT * FROM cte WHERE dept IS NOT NULL) tmp ON cte.flag = tmp.flag;
++------+------+------+------+------+------+
+| id   | dept | flag | id   | dept | flag |
++------+------+------+------+------+------+
+|    1 | IT   |    1 |    1 | IT   |    1 |
+|    2 | NULL |    1 |    1 | IT   |    1 |
+|    3 | NULL |    1 |    1 | IT   |    1 |
+|    4 | HR   |    5 |    4 | HR   |    5 |
+|    5 | NULL |    5 |    4 | HR   |    5 |
+|    6 | NULL |    5 |    4 | HR   |    5 |
++------+------+------+------+------+------+
 
 -- ---------------------- tbl: threevals -- finding 3 consecutive values in a column ---------------------
 SELECT * FROM sql_forda.threevals;
++------+------+
+| id   | num  |
++------+------+
+|    1 |    1 |
+|    2 |    1 |
+|    3 |    1 |
+|    4 |    2 |
+|    5 |    1 |
+|    6 |    2 |
+|    7 |    2 |
+|    8 |    3 |
+|    9 |    3 |
+|   10 |    3 |
++------+------+
+
+-- Solution:
 WITH cte AS
 (
 	SELECT * 
@@ -49,14 +124,43 @@ WITH cte AS
 )
 -- SELECT * FROM cte;
 SELECT num FROM cte WHERE num = prev_val AND num = next_val;
++------+
+| num  |
++------+
+|    1 |
+|    3 |
++------+
 
---  finding the IDs as well of the 3 consecutive nums (extending the above problem) --------------------------------
+--  finding the IDs as well of the 3 consecutive nums (extending the above problem) 
 -- Run the following two queries one by one to see the logic
 SELECT * 
 	, DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS drnk
     , id - DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS diff 
 FROM threevals;
++------+------+------+------+
+| id   | num  | drnk | diff |
++------+------+------+------+
+|    1 |    1 |    1 |    0 |
+|    2 |    1 |    2 |    0 |
+|    3 |    1 |    3 |    0 |
+|    5 |    1 |    4 |    1 |
+|    4 |    2 |    1 |    3 |
+|    6 |    2 |    2 |    4 |
+|    7 |    2 |    3 |    4 |
+|    8 |    3 |    1 |    7 |
+|    9 |    3 |    2 |    7 |
+|   10 |    3 |    3 |    7 |
++------+------+------+------+
 SELECT diff, count(*) AS cnt FROM (SELECT *, id - DENSE_RANK() OVER(PARTITION BY num ORDER BY id) AS diff FROM threevals) t GROUP BY diff;
++------+-----+
+| diff | cnt |
++------+-----+
+|    0 |   3 |
+|    1 |   1 |
+|    3 |   1 |
+|    4 |   2 |
+|    7 |   3 |
++------+-----+
 
 -- final solution using above two queries in CTEs
 WITH cte AS 
@@ -66,20 +170,67 @@ WITH cte AS
 SELECT GROUP_CONCAT(id) AS IDs, num AS consecutive_num FROM (SELECT cte.id, cte.num FROM cte, cte2 WHERE cte.diff = cte2.diff) t GROUP BY num;
 -- To get 'id' and 'num' only cols, replace the above uncommented SELECT stmt with:  SELECT cte.id, cte.num FROM cte, cte2 WHERE cte.diff = cte2.diff ;
 -- For even better result, replace above SELECT with : SELECT GROUP_CONCAT(id) AS IDs, num AS consec_num FROM (SELECT cte.id, cte.num FROM cte, cte2 WHERE cte.diff = cte2.diff) t GROUP BY num;
++--------+-----------------+
+| IDs    | consecutive_num |
++--------+-----------------+
+| 1,2,3  |               1 |
+| 8,9,10 |               3 |
++--------+-----------------+
 
 -- ----------------------tbl : dual_lang -- find company IDs having at least 2 users speaking both English & German ------------------------
 -- SELECT * FROM dual_lang;
++--------+--------+---------+
+| compid | userid | lang    |
++--------+--------+---------+
+|      1 |      1 | German  |
+|      1 |      1 | English |
+|      1 |      2 | German  |
+|      1 |      3 | English |
+|      1 |      3 | German  |
+|      1 |      4 | English |
+|      2 |      5 | German  |
+|      2 |      5 | English |
+|      2 |      6 | Spanish |
+|      2 |      6 | English |
+|      2 |      7 | English |
+|      3 |      8 | English |
+|      3 |      9 | English |
+|      3 |      8 | German  |
+|      3 |      9 | German  |
+|      3 |     10 | Spanish |
++--------+--------+---------+
+	
 -- SELECT compid, userid, GROUP_CONCAT(lang SEPARATOR ' ') AS lang_list FROM dual_lang GROUP BY 1, 2;   -- line used ahead as cte
 WITH cte AS (SELECT compid, userid, GROUP_CONCAT(lang SEPARATOR ' ') AS lang_list FROM dual_lang GROUP BY 1, 2)
 SELECT compid, userid, lang_list FROM cte WHERE lang_list IN ('German English', 'English German');
++--------+--------+----------------+
+| compid | userid | lang_list      |
++--------+--------+----------------+
+|      1 |      1 | German English |
+|      1 |      3 | English German |
+|      2 |      5 | German English |
+|      3 |      8 | English German |
+|      3 |      9 | English German |
++--------+--------+----------------+
+
 -- ----------- another solution -----------
 SELECT compid, userid, COUNT(*) FROM dual_lang WHERE lang <> 'Spanish'
 GROUP BY compid, userid HAVING count(*) = 2;
 
 -- -----------------------tbl: test_status -- find date range for particular status----------------------------------
--- SELECT * FROM test_status;
--- SELECT *, ROW_NUMBER() OVER(ORDER BY date_value) AS grp FROM test_status;
--- SELECT *, ROW_NUMBER() OVER(PARTITION BY state ORDER BY date_value) AS grp1 FROM test_status;
+SELECT * FROM test_status;
++------------+---------+
+| date_value | state   |
++------------+---------+
+| 2024-01-01 | Success |
+| 2024-01-02 | Success |
+| 2024-01-03 | Success |
+| 2024-01-04 | Fail    |
+| 2024-01-05 | Fail    |
+| 2024-01-06 | Success |
++------------+---------+
+
+-- Solution:
 WITH cte AS
 (
 	SELECT *, grp - grp1 AS grp_final FROM
@@ -88,12 +239,30 @@ WITH cte AS
         , ROW_NUMBER() OVER(PARTITION BY state ORDER BY date_value) AS grp1
     FROM test_status) tmp
 )
--- SELECT * FROM cte;
 SELECT MIN(date_value) AS start_date, MAX(date_value) AS end_date, state, grp_final
 FROM cte GROUP BY state, grp_final ORDER BY MIN(date_value);
-
++------------+------------+---------+-----------+
+| start_date | end_date   | state   | grp_final |
++------------+------------+---------+-----------+
+| 2024-01-01 | 2024-01-03 | Success |         0 |
+| 2024-01-04 | 2024-01-05 | Fail    |         3 |
+| 2024-01-06 | 2024-01-06 | Success |         2 |
++------------+------------+---------+-----------+
+	
 -- -----------------------tbl: distance -- remove duplicate distance records ----------------------------------------
--- SELECT * FROM distances;
+SELECT * FROM distances;
++--------+--------+----------+
+| place1 | place2 | distance |
++--------+--------+----------+
+| A      | B      |       10 |
+| B      | A      |       10 |
+| C      | D      |       20 |
+| D      | C      |       20 |
+| D      | E      |       30 |
+| C      | F      |       40 |
++--------+--------+----------+
+
+-- Solution:
 WITH CTE AS
 (
 	SELECT place1, place2, distance,
@@ -102,51 +271,127 @@ WITH CTE AS
     CASE WHEN place1 < place2 THEN place2 ELSE place1 END ORDER BY distance) AS rownum
     FROM distances ORDER BY 4
 ) SELECT * FROM CTE WHERE rownum <> 2;
-
++--------+--------+----------+--------+
+| place1 | place2 | distance | rownum |
++--------+--------+----------+--------+
+| A      | B      |       10 |      1 |
+| C      | D      |       20 |      1 |
+| C      | F      |       40 |      1 |
+| D      | E      |       30 |      1 |
++--------+--------+----------+--------+
 
 -- -----------------------tbl: family -- find which member belongs to which family ----------------------------------
--- SELECT * FROM family;
--- desired output:                   familyid     members
--- xx									1          A,Z,T
--- xx									2          G,V,B,N
+SELECT * FROM family;
++--------+--------+----------+
+| person | parent | familyid |
++--------+--------+----------+
+| A      | NULL   | 1        |
+| G      | NULL   | 2        |
+| T      | A      | NULL     |
+| V      | B      | NULL     |
+| B      | G      | NULL     |
+| Z      | T      | NULL     |
+| N      | V      | NULL     |
++--------+--------+----------+
 
+-- Solution:
 WITH RECURSIVE famcte AS
 (
 	SELECT * FROM family WHERE parent IS NULL
     UNION ALL
     SELECT B.person, B.parent, A.familyid FROM famcte A JOIN family B ON A.person = B.parent
-) 
--- SELECT * FROM famcte;
+)
 SELECT familyid, GROUP_CONCAT(person SEPARATOR ', ') AS memberList FROM famcte GROUP BY familyid;
++----------+------------+
+| familyid | memberList |
++----------+------------+
+| 1        | A, T, Z    |
+| 2        | G, B, V, N |
++----------+------------+
 
 -- -----------------------tbl: Products -- Re-order the IDs (Deloitte) ----------------------------------
-SELECT * FROM products;  /* ID col in o/p (top to bottom, separated by 'category')  :  1 2 3 9  |  4 5 6 7 8 */
-/* ID col in desired o/p (top to bottom, separated by 'category'):  9 3 2 1  |  8 7 6 5 4 */   -- Bascially, order in each partition is reversed
+SELECT * FROM products; 
++------+------------+-------------+
+| id   | item       | category    |
++------+------------+-------------+
+|    1 | Laptop     | Electronics |
+|    2 | Smartphone | Electronics |
+|    3 | Tablet     | Electronics |
+|    9 | Printer    | Electronics |
+|    4 | Headphones | Accessories |
+|    5 | Smartwatch | Accessories |
+|    6 | Keyboard   | Accessories |
+|    7 | Mouse      | Accessories |
+|    8 | Monitor    | Accessories |
++------+------------+-------------+
+
+/* ID col in desired o/p (top to bottom, separated by 'category'):  9 3 2 1  |  8 7 6 5 4 */   -- Bascially, order in each partition is reversed (as evident in output table below)
 
 WITH CTE AS (
 SELECT *
 	, ROW_NUMBER() OVER(PARTITION BY category ORDER BY id) AS rnk
     , ROW_NUMBER() OVER(PARTITION BY category ORDER BY id DESC) AS rnkdesc
 FROM products)
--- ---------- Intermediate output for checking query processing
-SELECT *
-FROM CTE c1 INNER JOIN CTE c2 ON c1.category = c2.category AND c1.rnk = c2.rnkdesc;
--- ---------- Final desired output (just selecting desired cols from above intermediate query's o/p)
--- SELECT c1.id AS c1id, c2.item as c2item, c1.category as c1cat, c2.category as c2cat, c1.rnk, c2.rnkdesc 
--- FROM CTE c1 INNER JOIN CTE c2 
--- ON c1.category = c2.category AND c1.rnk = c2.rnkdesc;
+SELECT c1.id AS c1id, c2.item as c2item, c1.category as c1cat, c2.category as c2cat, c1.rnk, c2.rnkdesc 
+FROM CTE c1 INNER JOIN CTE c2 
+ON c1.category = c2.category AND c1.rnk = c2.rnkdesc;
++------+------------+-------------+-------------+-----+---------+
+| c1id | c2item     | c1cat       | c2cat       | rnk | rnkdesc |
++------+------------+-------------+-------------+-----+---------+
+|    8 | Headphones | Accessories | Accessories |   5 |       5 |
+|    7 | Smartwatch | Accessories | Accessories |   4 |       4 |
+|    6 | Keyboard   | Accessories | Accessories |   3 |       3 |
+|    5 | Mouse      | Accessories | Accessories |   2 |       2 |
+|    4 | Monitor    | Accessories | Accessories |   1 |       1 |
+|    9 | Laptop     | Electronics | Electronics |   4 |       4 |
+|    3 | Smartphone | Electronics | Electronics |   3 |       3 |
+|    2 | Tablet     | Electronics | Electronics |   2 |       2 |
+|    1 | Printer    | Electronics | Electronics |   1 |       1 |
++------+------------+-------------+-------------+-----+---------+
 
+	
 -- -----------------------tbl: emp_info --  emp having same salary as another emp in same dept ---------------------------------- 
 select * from emp_info;
++------+---------+-----------+--------+
+| id   | name    | dept      | salary |
++------+---------+-----------+--------+
+|    1 | Akash   | Sales     |    100 |
+|    2 | John    | Sales     |    110 |
+|    3 | Rohit   | Sales     |    100 |
+|    4 | Tom     | IT        |    200 |
+|    5 | Shubham | IT        |    205 |
+|    6 | Vabna   | IT        |    200 |
+|    7 | Prativa | Marketing |    150 |
+|    8 | Rahul   | Marketing |    155 |
+|    9 | Yash    | Marketing |    160 |
++------+---------+-----------+--------+
+	
 -- ---------- Query checking intermediate output -------
 -- SELECT * 
 -- FROM emp_info e1 INNER JOIN emp_info e2 
 -- ON e1.dept = e2.dept AND e1.salary = e2.salary AND e1.name <> e2.name;
++------+-------+-------+--------+------+-------+-------+--------+
+| id   | name  | dept  | salary | id   | name  | dept  | salary |
++------+-------+-------+--------+------+-------+-------+--------+
+|    3 | Rohit | Sales |    100 |    1 | Akash | Sales |    100 |
+|    1 | Akash | Sales |    100 |    3 | Rohit | Sales |    100 |
+|    6 | Vabna | IT    |    200 |    4 | Tom   | IT    |    200 |
+|    4 | Tom   | IT    |    200 |    6 | Vabna | IT    |    200 |
++------+-------+-------+--------+------+-------+-------+--------+
+	
 -- --------- Final output (just selecting cols from above query) ----
 SELECT e1.*
 FROM emp_info e1 INNER JOIN emp_info e2 
 ON e1.dept = e2.dept AND e1.salary = e2.salary AND e1.id <> e2.id;
-
++------+-------+-------+--------+
+| id   | name  | dept  | salary |
++------+-------+-------+--------+
+|    3 | Rohit | Sales |    100 |
+|    1 | Akash | Sales |    100 |
+|    6 | Vabna | IT    |    200 |
+|    4 | Tom   | IT    |    200 |
++------+-------+-------+--------+
+	
 -- As an add, find median salary WITHOUT using a median function (though MySQL doesn't have such a function)
 WITH MedianSalCTE AS 
 (SELECT salary 
@@ -156,17 +401,36 @@ FROM emp_info)
 SELECT AVG(SALARY) AS median_salary
 FROM MedianSalCTE
 WHERE row_num IN (FLOOR((total_count + 1) / 2), CEIL((total_count + 1) / 2));
-
++---------------+
+| median_salary |
++---------------+
+|      155.0000 |
++---------------+
+	
 -- ANOTHER ADD: finding highest salary without using ANY function
 SET @highest = 0;
 WITH cte AS 
 (SELECT *, @highest := IF(salary >= @highest, salary, @highest) AS highest_salary FROM emp_info)
 -- SELECT DISTINCT @highest FROM cte;  -- this line will also return the highest salary
 SELECT SUBSTRING_INDEX(GROUP_CONCAT(highest_salary SEPARATOR ', '), ',', -1) AS highest_sal FROM cte;
++-------------+
+| highest_sal |
++-------------+
+|  205        |
++-------------+
 
 -- ----------------------- tbl: puzzle --  evaluate expr in col 'rule' in tbl ---------------------------------- 
 
 select * from puzzle; -- 'rule' col is of string (VARCHAR) type, not numeric type
++------+------+------+
+| id   | rule | val  |
++------+------+------+
+|    1 | 2+3  |   10 |
+|    2 | 1*5  |   12 |
+|    3 | 4-2  |   14 |
+|    4 | 3/1  |   15 |
+|    5 | 1+2  |   18 |
++------+------+------+
 
 -- CTE to split expression like '1+2' as 1, +, 2 in 3 separate columns
 WITH CTE AS
@@ -183,11 +447,42 @@ SELECT *
            WHEN operator = '*' THEN (SELECT val from puzzle where id1 = id) * ((SELECT val from puzzle where id2 = id)) 
 	  END AS ans 
 FROM cte;
-
++------+------+------+------+------+----------+--------+
+| id   | rule | val  | id1  | id2  | operator | ans    |
++------+------+------+------+------+----------+--------+
+|    1 | 2+3  |   10 | 2    | 3    | +        |     26 |
+|    2 | 1*5  |   12 | 1    | 5    | *        |    180 |
+|    3 | 4-2  |   14 | 4    | 2    | -        |      3 |
+|    4 | 3/1  |   15 | 3    | 1    | /        | 1.4000 |
+|    5 | 1+2  |   18 | 1    | 2    | +        |     22 |
++------+------+------+------+------+----------+--------+
+	
 -- ----------------------- tbl: bit_status --  count the 1s in tbl ---------------------------------- 
 -- YouTube: https://www.youtube.com/watch?v=jjn3H4iS4kc
 -- SELECT * FROM bit_state;
-
++--------------+
+| state        |
++--------------+
+| 1            |
+| 1            |
+| 0            |
+| 1            |
+| 1            |
+| 1            |
+| 0            |
+| 1            |
+| 0            |
+| 1            |
+| 1            |
+| 1            |
+| 1            |
+| 0            |
+| 0            |
+| 1            |
+| 1            |
+| 0            |
++--------------+
+	
 -- --------------- First Approach (keeping it here because of logic for partitioning the 'state' column in cte_2)
 -- SET @var = 0;
 -- WITH 
@@ -196,19 +491,46 @@ FROM cte;
 -- cte_final AS (SELECT *, LEAD(state, 1, CASE WHEN state = 1 THEN 0 ELSE 1 END) OVER() AS lead_status FROM cte_2)
 -- -- SELECT * FROM cte_final;
 -- SELECT one_counter FROM cte_final WHERE lead_status = 0 AND one_counter <> 0;
-
++-------------+
+| one_counter |
++-------------+
+|           2 |
+|           3 |
+|           1 |
+|           4 |
+|           2 |
++-------------+
+	
 -- -- --------------- Second Approach (one less CTE) -----------------------
 SET @var = 0;
 WITH 
 cte_1 AS (SELECT state, CASE WHEN state = 1 THEN @var := @var + 1 ELSE @var := 0 END AS one_counter FROM bit_state),
 cte_final AS (SELECT *, LEAD(state, 1, CASE WHEN state = 1 THEN 0 ELSE 1 END) OVER() AS lead_status FROM cte_1)
- -- SELECT * FROM cte_final;
 SELECT one_counter FROM cte_final WHERE lead_status = 0 AND one_counter <> 0;
++-------------+
+| one_counter |
++-------------+
+|           2 |
+|           3 |
+|           1 |
+|           4 |
+|           2 |
++-------------+
+	
 -- ---------------- Shorter approach (using IF) ---------------------
 SET @var = 0;
 WITH cte1 AS (SELECT *, @var := IF(state = 1, @var + 1, 0) AS one_counter FROM bit_state),
 cte2 AS (SELECT *, LEAD(state, 1, CASE WHEN state = 1 THEN 0 ELSE 1 END) OVER() AS lead_status FROM cte1)
 SELECT one_counter FROM cte2 WHERE one_counter <> 0 AND lead_status = 0;
++-------------+
+| one_counter |
++-------------+
+|           2 |
+|           3 |
+|           1 |
+|           4 |
+|           2 |
++-------------+
 
 -- ----------------------- tbl: employees --  find juniors under each manager ---------------------------------- 
 
@@ -219,7 +541,13 @@ SELECT                                                        -- this SELECT fin
     mgrname
     , GROUP_CONCAT(fullname SEPARATOR ', ') AS juniors
 FROM cte WHERE mgrname IS NOT NULL GROUP BY mgrname ;
-
++--------------+----------------------------------------------------------------------------+
+| mgrname      | juniors                                                                    |
++--------------+----------------------------------------------------------------------------+
+| Lee Tom      | Adams Jennifer, Ford Julia, Jones David, Peters Joe, Joe Alan, Clark Kelly |
+| Miller Bruce | Smith Brad, Lee Tom                                                        |
+| Smith Brad   | Owens Kristy                                                               |
++--------------+----------------------------------------------------------------------------+
 
 -- ----------------------- tbl: office --  find emp_id who are present inside office ---------------------------------- 
 
@@ -227,7 +555,23 @@ FROM cte WHERE mgrname IS NOT NULL GROUP BY mgrname ;
 -- INSERT INTO office VALUES ('1', 'ENTRY', '2023-12-22 09:00:00'),('1', 'EXIT', '2023-12-22 09:15:00'), ('2', 'ENTRY', '2023-12-22 09:00:00'), ('2', 'EXIT', '2023-12-22 09:15:00'), ('2', 'ENTRY', '2023-12-22 09:30:00'),('3', 'EXIT', '2023-12-22 09:00:00'),('3', 'ENTRY', '2023-12-22 09:15:00'), ('3', 'EXIT', '2023-12-22 09:30:00'), ('3', 'ENTRY', '2023-12-22 09:45:00'), ('4', 'ENTRY', '2023-12-22 09:45:00'), ('5', 'ENTRY', '2023-12-22 09:40:00');
 
 SELECT * FROM office;
++--------+------------+---------------------+
+| emp_id | emp_status | time_id             |
++--------+------------+---------------------+
+|      1 | ENTRY      | 2023-12-22 09:00:00 |
+|      1 | EXIT       | 2023-12-22 09:15:00 |
+|      2 | ENTRY      | 2023-12-22 09:00:00 |
+|      2 | EXIT       | 2023-12-22 09:15:00 |
+|      2 | ENTRY      | 2023-12-22 09:30:00 |
+|      3 | EXIT       | 2023-12-22 09:00:00 |
+|      3 | ENTRY      | 2023-12-22 09:15:00 |
+|      3 | EXIT       | 2023-12-22 09:30:00 |
+|      3 | ENTRY      | 2023-12-22 09:45:00 |
+|      4 | ENTRY      | 2023-12-22 09:45:00 |
+|      5 | EXIT       | 2023-12-22 09:40:00 |
++--------+------------+---------------------+
 
+-- Solution:
 WITH CTE_emp_presence AS
 (SELECT *, MAX(time_id) OVER(PARTITION BY emp_id) AS emp_latest_time
 FROM office
@@ -235,7 +579,13 @@ FROM office
 SELECT emp_id
 FROM CTE_emp_presence 
 WHERE time_id = emp_latest_time AND emp_status = 'ENTRY';
-
++--------+
+| emp_id |
++--------+
+|      2 |
+|      3 |
+|      4 |
++--------+
 
 -- ----------------------- tbl: consecutive_raise --  find emp_id having salary increasing over 3 years ---------------------------------- 
 
@@ -243,35 +593,76 @@ WHERE time_id = emp_latest_time AND emp_status = 'ENTRY';
 -- INSERT INTO consecutive_raise(emp_id, emp_name, emp_salary, appraisal_year) VALUES (1, 'Alice', 50000, 2021),(1, 'Alice', 55000, 2022),(1, 'Alice', 60000, 2023),(2, 'Bob', 60000, 2021),(2, 'Bob', 58000, 2022),(2, 'Bob', 62000, 2023), (3, 'Charlie', 70000, 2020), (3, 'Charlie', 72000, 2021), (3, 'Charlie', 71000, 2022), (4, 'David', 40000, 2020), (4, 'David', 45000, 2021), (4, 'David', 50000, 2022), (5, 'Eve', 30000, 2021), (5, 'Eve', 35000, 2022);
 
 SELECT * FROM consecutive_raise;
++--------+----------+------------+----------------+
+| emp_id | emp_name | emp_salary | appraisal_year |
++--------+----------+------------+----------------+
+|      1 | Alice    |      50000 |           2021 |
+|      1 | Alice    |      55000 |           2022 |
+|      1 | Alice    |      60000 |           2023 |
+|      2 | Bob      |      60000 |           2021 |
+|      2 | Bob      |      58000 |           2022 |
+|      2 | Bob      |      62000 |           2023 |
+|      3 | Charlie  |      70000 |           2020 |
+|      3 | Charlie  |      72000 |           2021 |
+|      3 | Charlie  |      71000 |           2022 |
+|      4 | David    |      40000 |           2020 |
+|      4 | David    |      45000 |           2021 |
+|      4 | David    |      50000 |           2022 |
+|      5 | Eve      |      30000 |           2021 |
+|      5 | Eve      |      35000 |           2022 |
++--------+----------+------------+----------------+
 
+-- Solution:
 WITH CTE_years_sorted AS 
 (SELECT *, ROW_NUMBER() OVER(PARTITION BY emp_id ORDER BY appraisal_year) AS rw_num FROM consecutive_raise),
 CTE_extract_empName AS
 (SELECT 
-	CASE WHEN emp_salary < LEAD(emp_salary) OVER(PARTITION BY emp_id) 
-		   AND LEAD(emp_salary, 1) OVER(PARTITION BY emp_id) < LEAD(emp_salary, 2) OVER(PARTITION BY emp_id)
-		THEN emp_name
+	CASE WHEN emp_salary < LEAD(emp_salary) OVER(PARTITION BY emp_id AND LEAD(emp_salary, 1) OVER(PARTITION BY emp_id) < LEAD(emp_salary, 2) OVER(PARTITION BY emp_id) THEN emp_name
 	END AS incr_sal_emp_name
 	FROM CTE_years_sorted 
 )
 SELECT incr_sal_emp_name FROM CTE_extract_empName WHERE incr_sal_emp_name IS NOT NULL;
-
++-------------------+
+| incr_sal_emp_name |
++-------------------+
+| Alice             |
+| David             |
++-------------------+
 
 -- ----------------------- tbl: skills_table --  find emp_id having ONLY 'SQL' as skill (only SQL, no other skill) ---------------------------------- 
 
 -- SELECT * FROM skills_table; 
++--------+--------+
+| emp_id | skills |
++--------+--------+
+|    101 | SQL    |
+|    102 | SQL    |
+|    102 | Python |
+|    103 | SQL    |
+|    103 | Excel  |
+|    104 | Python |
+|    104 | Excel  |
+|    105 | SQL    |
+|    106 | Python |
++--------+--------+
 
 SELECT emp_id
 FROM 
-(SELECT 
-    emp_id
-    , GROUP_CONCAT(skills SEPARATOR ', ') AS emp_skills
- FROM skills_table
- GROUP BY emp_id
+(	SELECT 
+	    emp_id
+	    , GROUP_CONCAT(skills SEPARATOR ', ') AS emp_skills
+	 FROM skills_table
+	 GROUP BY emp_id
  ) temp_tbl
 WHERE emp_skills = "SQL";
++--------+
+| emp_id |
++--------+
+|    101 |
+|    105 |
++--------+
 
--- another solution
+-- another solution (produces same output as above)
 SELECT emp_id
 FROM skills_table
 GROUP BY emp_id
@@ -282,7 +673,14 @@ HAVING COUNT(DISTINCT skills) = 1 AND MAX(skills) = 'SQL';
 -- CREATE TABLE colors(id INT, colors TEXT);
 -- INSERT INTO colors VALUES (1, 'Red,Green,Blue'), (2, 'Orangered,Periwinkle');
 -- SELECT * FROM colors;  
++------+----------------------+
+| id   | colors               |
++------+----------------------+
+|    1 | Red,Green,Blue       |
+|    2 | Orangered,Periwinkle |
++------+----------------------+
 
+-- Solution:	
 WITH RECURSIVE explode AS
 (
     SELECT * FROM colors
@@ -290,12 +688,19 @@ WITH RECURSIVE explode AS
     SELECT id, REGEXP_REPLACE(colors, '^[^,]*,', '') colors FROM explode
     WHERE colors LIKE '%,%'
 ) SELECT id, REGEXP_REPLACE(colors, ',.*', '') colors FROM explode ORDER BY id;
-
++------+------------+
+| id   | colors     |
++------+------------+
+|    1 | Red        |
+|    1 | Green      |
+|    1 | Blue       |
+|    2 | Orangered  |
+|    2 | Periwinkle |
++------+------------+
+	
 -- ----------------------- tbl: sandwich --  finding sandwiching/sandwiched numbers ----------------------------------
 -- Ref: https://www.youtube.com/watch?v=PZMqTID8Dgg
-
 -- To be considered 'sandwiched', middle num should be diff from its prev & next num; [1,2,1], [3,4,3] are alright; [4,4,4] are not.
-
 -- CREATE TABLE sandwich (sn INT, num INT);
 -- INSERT INTO sandwich (sn, num) VALUES(1, 4),(2, 7),(3, 4),(4, 9),(5, 9),(6, 9),(7, 3),(8, 9);
 
@@ -308,7 +713,13 @@ SELECT DISTINCT sn, sandwiching_nums FROM
     FROM sandwich
 ) temp 
 WHERE sandwiching_nums IS NOT NULL;
-
++------+------------------+
+| sn   | sandwiching_nums |
++------+------------------+
+|    1 |                4 |
+|    6 |                9 |
++------+------------------+
+	
 -- Return the sandwiched number
 SELECT DISTINCT sn, sandwiched FROM 
 (
@@ -318,7 +729,13 @@ SELECT DISTINCT sn, sandwiched FROM
 	FROM sandwich
 ) temp
 WHERE sandwiched IS NOT NULL;
-
++------+------------+
+| sn   | sandwiched |
++------+------------+
+|    1 |          7 |
+|    6 |          3 |
++------+------------+
+	
 -- We can combine above CTEs to get 'sandwiching_nums' and 'sandwiched' side by side in one output:
 WITH CTE_sandwiching_nums AS(
 SELECT DISTINCT sn, sandwiching_nums FROM 
@@ -343,7 +760,12 @@ SELECT
 	, sandwiched
 FROM CTE_sandwiching_nums ctsn JOIN CTE_sandwiched ctsw
 ON ctsn.sn = ctsw.sn;
-
++------------------+------------+
+| sandwiching_nums | sandwiched |
++------------------+------------+
+|                4 |          7 |
+|                9 |          3 |
++------------------+------------+
 
 
 -- #######################################################################################################################################
@@ -451,12 +873,23 @@ FROM CTE_dateRanked cte
 LEFT JOIN CTE_salary_ratio sr ON cte.employee_id = sr.employee_id
 GROUP BY cte.employee_id, sr.salary_growth_ratio, sr.emp_join_date
 ORDER BY cte.employee_id;
++-------------+---------------+-------------+-------------------+-----------------+----------------------------+---------------+
+| employee_id | latest_salary | count_promo | max_salary_growth | never_decreased | avg_months_between_changes | rnk_by_growth |
++-------------+---------------+-------------+-------------------+-----------------+----------------------------+---------------+
+|           1 |      70000.00 |           1 |             27.27 | Y               |                    15.5000 |             2 |
+|           2 |      68000.00 |           2 |             30.77 | Y               |                    23.5000 |             1 |
+|           3 |      72000.00 |           1 |             10.77 | Y               |                    28.0000 |             5 |
+|           4 |      49000.00 |           0 |              8.89 | Y               |                    18.0000 |             6 |
+|           5 |      75000.00 |           2 |             20.97 | Y               |                    30.0000 |             4 |
+|           6 |      75000.00 |           1 |             87.50 | N               |                    20.3333 |             3 |
++-------------+---------------+-------------+-------------------+-----------------+----------------------------+---------------+
 
 -- ################################################################################################################################################################
 
 -- Write a query: "For each leap year between 1825 and 2025, find the count of months in that year that had 13th on a Friday."
 -- Output should have two columns :  LEAP_YEAR, MONTHS_COUNT
 
+SET @@cte_max_recursion_depth = 10000;
 WITH RECURSIVE year_months AS (
     SELECT 1825 AS years, 1 AS months                         -- 1825, 1
     UNION ALL
@@ -477,8 +910,20 @@ friday_13th AS (
     WHERE DAYOFWEEK(STR_TO_DATE(CONCAT(years, '-', LPAD(months, 2, '0'), '-13'), '%Y-%m-%d')) = 6
 )
 SELECT years AS LEAP_YEAR, COUNT(*) AS MONTHS_COUNT
-FROM friday_13th GROUP BY years ORDER BY years;
-
+FROM friday_13th GROUP BY years ORDER BY years;      -- Snapshot of the output below
++-----------+--------------+
+| LEAP_YEAR | MONTHS_COUNT |
++-----------+--------------+
+|      1828 |            1 |
+|      1832 |            3 |
+|      1836 |            1 |
+.      .... |           ...|
+.      .... |           ...|
+.      .... |           ...|
+|      2016 |            1 |
+|      2020 |            2 |
+|      2024 |            2 |
++-----------+--------------+
 
 
 
