@@ -295,11 +295,11 @@ WITH RECURSIVE explode AS
 -- https://www.youtube.com/watch?v=PZMqTID8Dgg
 
 -- CREATE TABLE sandwich (sn INT, num INT);
--- INSERT INTO sandwich (sn, num) VALUES(1, 4),(2, 7),(3, 4),(4, 9),(5, 9),(6, 3),(7, 9),(8, 4);
+-- INSERT INTO sandwich (sn, num) VALUES(1, 4),(2, 7),(3, 4),(4, 9),(5, 9),(6, 9),(7, 3),(8, 9);
 
 -- Returns those numbers that are sandwiching a number
 SELECT
-	sandwiching
+	DISTINCT sandwiching
 FROM (
 	SELECT 
 		CASE WHEN num = COALESCE(LEAD(num, 2) OVER(), 0) THEN num END AS sandwiching
