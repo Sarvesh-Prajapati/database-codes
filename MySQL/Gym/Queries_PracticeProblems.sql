@@ -292,7 +292,9 @@ WITH RECURSIVE explode AS
 ) SELECT id, REGEXP_REPLACE(colors, ',.*', '') colors FROM explode ORDER BY id;
 
 -- ----------------------- tbl: sandwich --  finding sandwiching/sandwiched numbers ----------------------------------
--- https://www.youtube.com/watch?v=PZMqTID8Dgg
+-- Ref: https://www.youtube.com/watch?v=PZMqTID8Dgg
+
+-- To be considered 'sandwiched', middle num should be diff from its prev & next num; [1,2,1], [3,4,3] are alright; [4,4,4] are not.
 
 -- CREATE TABLE sandwich (sn INT, num INT);
 -- INSERT INTO sandwich (sn, num) VALUES(1, 4),(2, 7),(3, 4),(4, 9),(5, 9),(6, 9),(7, 3),(8, 9);
