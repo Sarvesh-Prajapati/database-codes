@@ -297,14 +297,50 @@ WITH RECURSIVE explode AS
 -- CREATE TABLE sandwich (sn INT, num INT);
 -- INSERT INTO sandwich (sn, num) VALUES(1, 4),(2, 7),(3, 4),(4, 9),(5, 9),(6, 9),(7, 3),(8, 9);
 
--- Returns those numbers that are sandwiching a number
-SELECT
-	DISTINCT sandwiching
-FROM (
-	SELECT 
-		CASE WHEN num = COALESCE(LEAD(num, 2) OVER(), 0) THEN num END AS sandwiching
+-- Return those numbers that are sandwiching a number
+SELECT DISTINCT sn, sandwiching_nums FROM 
+(
+	SELECT
+		sn
+		, CASE WHEN num <> LEAD(num) OVER() AND num = LEAD(num, 2) OVER() THEN num END AS sandwiching_nums
+    FROM sandwich
+) temp 
+WHERE sandwiching_nums IS NOT NULL;
+
+-- Return the sandwiched number
+SELECT DISTINCT sn, sandwiched FROM 
+(
+	SELECT
+		sn
+		, CASE WHEN num <> LEAD(num) OVER() AND num = LEAD(num, 2) OVER() THEN LEAD(num) OVER() END AS sandwiched
 	FROM sandwich
-	) temp WHERE sandwiching IS NOT NULL;
+) temp
+WHERE sandwiched IS NOT NULL;
+
+-- We can combine above CTEs to get 'sandwiching_nums' and 'sandwiched' side by side in one output:
+WITH CTE_sandwiching_nums AS(
+SELECT DISTINCT sn, sandwiching_nums FROM 
+	(
+		SELECT
+			sn
+			, CASE WHEN num <> LEAD(num) OVER() AND num = LEAD(num, 2) OVER() THEN num END AS sandwiching_nums
+		FROM sandwich
+	) temp WHERE sandwiching_nums IS NOT NULL
+),
+CTE_sandwiched AS(
+SELECT DISTINCT sn, sandwiched FROM 
+	(
+		SELECT
+			sn
+            , CASE WHEN num <> LEAD(num) OVER() AND num = LEAD(num, 2) OVER() THEN LEAD(num) OVER() END AS sandwiched
+		FROM sandwich
+	) temp WHERE sandwiched IS NOT NULL
+)
+SELECT
+	sandwiching_nums
+	, sandwiched
+FROM CTE_sandwiching_nums ctsn JOIN CTE_sandwiched ctsw
+ON ctsn.sn = ctsw.sn;
 
 
 
