@@ -291,6 +291,22 @@ WITH RECURSIVE explode AS
     WHERE colors LIKE '%,%'
 ) SELECT id, REGEXP_REPLACE(colors, ',.*', '') colors FROM explode ORDER BY id;
 
+-- ----------------------- tbl: sandwich --  finding sandwiching/sandwiched numbers ----------------------------------
+-- https://www.youtube.com/watch?v=PZMqTID8Dgg
+
+-- CREATE TABLE sandwich (sn INT, num INT);
+-- INSERT INTO sandwich (sn, num) VALUES(1, 4),(2, 7),(3, 4),(4, 9),(5, 9),(6, 3),(7, 9),(8, 4);
+
+-- Returns those numbers that are sandwiching a number
+SELECT
+	sandwiching
+FROM (
+	SELECT 
+		CASE WHEN num = COALESCE(LEAD(num, 2) OVER(), 0) THEN num END AS sandwiching
+	FROM sandwich
+	) temp WHERE sandwiching IS NOT NULL;
+
+
 
 -- #######################################################################################################################################
 -- ----------------------- REPORT QUERIES (Ankit Bansal YT Channel : https://www.youtube.com/watch?v=rFsgzSeG1X0) -----------------------
