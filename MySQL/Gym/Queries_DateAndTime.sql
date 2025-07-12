@@ -1,4 +1,4 @@
-# ------------ DATEDIFF, TIMESTAMPDIFF, and INTERVAL examples ---------------
+# ------------ DATEDIFF, TIMESTAMPDIFF, and INTERVAL examples ----------------
 
 
 -- ==============================
