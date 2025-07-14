@@ -223,7 +223,11 @@ GROUP BY subcategory ;
 -- 11. Cumulative sales of products over all the months of 2011 and 2012.
 WITH CTE_Monthly_Sales AS (
 SELECT
-	YEAR(order_date) AS order_year, product_number, product_name, MONTH(order_date) AS 'Month', SUM(sales_amount) AS sales
+	YEAR(order_date) AS order_year
+	, product_number
+	, product_name
+	, MONTH(order_date) AS 'Month'
+	, SUM(sales_amount) AS sales
 FROM sales s LEFT JOIN products p ON p.p_product_key = s.s_product_key
 WHERE order_date IS NOT NULL AND YEAR(order_date) IN (2011, 2012)
 GROUP BY YEAR(order_date), product_number, product_name, MONTH(order_date)
