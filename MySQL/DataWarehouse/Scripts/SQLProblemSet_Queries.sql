@@ -5,7 +5,8 @@ SELECT
 	, FORMAT(COUNT(*), 0) AS 'Value' 
 FROM sales s LEFT JOIN products p ON p.p_product_key = s.s_product_key
 UNION ALL
-SELECT '# Attributes', (SELECT MAX(ORDINAL_POSITION) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'products') + ((SELECT MAX(ORDINAL_POSITION) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'sales') ) ;
+SELECT '# Attributes', (SELECT MAX(ORDINAL_POSITION) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'products') 
+	+ ((SELECT MAX(ORDINAL_POSITION) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'sales') ) ;
 +--------------+--------+
 | Info         | Value  |
 +--------------+--------+
