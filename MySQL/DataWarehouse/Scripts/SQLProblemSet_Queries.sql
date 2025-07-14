@@ -224,9 +224,9 @@ GROUP BY subcategory ;
 WITH CTE_Monthly_Sales AS (
 SELECT
 	YEAR(order_date) AS order_year
+	, MONTH(order_date) AS 'Month'
 	, product_number
 	, product_name
-	, MONTH(order_date) AS 'Month'
 	, SUM(sales_amount) AS sales
 FROM sales s LEFT JOIN products p ON p.p_product_key = s.s_product_key
 WHERE order_date IS NOT NULL AND YEAR(order_date) IN (2011, 2012)
