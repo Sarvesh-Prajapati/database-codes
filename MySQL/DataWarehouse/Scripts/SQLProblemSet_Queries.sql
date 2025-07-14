@@ -220,7 +220,7 @@ GROUP BY subcategory ;
 | Mountain Bikes |  1499 |
 +----------------+-------+
 
--- 11. Cumulative sales of products over all the months of 2011 and 2012.
+-- 11. Find the cumulative sales of products over all the months of 2011 and 2012.
 WITH CTE_Monthly_Sales AS (
 SELECT
 	YEAR(order_date) AS order_year
@@ -236,17 +236,30 @@ ORDER BY sales DESC
 SELECT *
 	, SUM(sales) OVER(PARTITION BY order_year, product_name ORDER BY order_year, Month) AS cumulative_sales
 FROM CTE_Monthly_Sales ;
--- Showing first 5 records:
-+------------+----------------+------------------------+-------+-------+------------------+
-| order_year | product_number | product_name           | Month | sales | cumulative_sales |
-+------------+----------------+------------------------+-------+-------+------------------+
-|       2011 | BK-M82B-38     | Mountain-100 Black- 38 |     1 | 10125 |            10125 |
-|       2011 | BK-M82B-38     | Mountain-100 Black- 38 |     2 | 10125 |            20250 |
-|       2011 | BK-M82B-38     | Mountain-100 Black- 38 |     3 |  3375 |            23625 |
-|       2011 | BK-M82B-38     | Mountain-100 Black- 38 |     4 |  6750 |            30375 |
-|       2011 | BK-M82B-38     | Mountain-100 Black- 38 |     5 | 13500 |            43875 |
-+------------+----------------+------------------------+-------+-------+------------------+
 
+-- Here's a snapshot of the result:
++------------+-------+----------------+--------------------------------+--------+------------------+
+| order_year | Month | product_number | product_name                   | sales  | cumulative_sales |
++------------+-------+----------------+--------------------------------+--------+------------------+
+|       2011 |     1 | BK-M82B-38     | Mountain-100 Black- 38         |  10125 |            10125 |
+|       2011 |     2 | BK-M82B-38     | Mountain-100 Black- 38         |  10125 |            20250 |
+|       2011 |     3 | BK-M82B-38     | Mountain-100 Black- 38         |   3375 |            23625 |
+|       2011 |     4 | BK-M82B-38     | Mountain-100 Black- 38         |   6750 |            30375 |
+|       2011 |     5 | BK-M82B-38     | Mountain-100 Black- 38         |  13500 |            43875 |
+	...	...	...			...			  ...		...
+	...	...	...			...			  ...		...
+	...	...	...			...			  ...		...
+|       2012 |    12 | SO-R809-L      | Racing Socks- L                |     18 |               18 |
+|       2012 |    12 | BC-R205        | Road Bottle Cage               |     81 |               81 |
+|       2012 |    12 | TT-R982        | Road Tire Tube                 |     28 |               28 |
+|       2012 |     1 | BK-R89B-44     | Road-250 Black- 44             |  32730 |            32730 |
+|       2012 |     2 | BK-R89B-44     | Road-250 Black- 44             |  30548 |            63278 |
+|       2012 |     3 | BK-R89B-44     | Road-250 Black- 44             |  19638 |            82916 |
+|       2012 |     4 | BK-R89B-44     | Road-250 Black- 44             |  17456 |           100372 |
+|       2012 |     5 | BK-R89B-44     | Road-250 Black- 44             |  19638 |           120010 |
++------------+-------+----------------+--------------------------------+--------+------------------+
+
+	
 -- 12. Which red-colored products were never sold ?
 SELECT 
 	product_id, product_number, product_name, order_date, sales_amount
