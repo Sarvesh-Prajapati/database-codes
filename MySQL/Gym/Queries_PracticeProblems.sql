@@ -26,7 +26,7 @@ SELECT *, @var := COALESCE(dept, @var) AS forward_filled_dept FROM ffill;
 |    6 | NULL | HR                  |
 +------+------+---------------------+
 	
--- OR (another solution)
+-- OR another solution:
 SET @var = NULL;
 SELECT *, @var := IF(dept IS NULL, @var, dept) AS forward_filled_dept FROM ffill;
 +------+------+---------------------+
