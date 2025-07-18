@@ -1,5 +1,6 @@
--- SCHEMA ON LOCAL MACHINE : 'sql_forda'  
--- TABLE NAME : 'c3_retail_sales'
+USE sql_forda;
+
+-- TABLE : 'c3_retail_sales'
 
 -- Get table's columns' info
 SHOW FIELDS FROM sql_forda.c3_retail_sales;
