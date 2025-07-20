@@ -130,4 +130,4 @@ CREATE TABLE silver_erp_px_cat_g1v2 (
 
 
 
--- ################## CREATING THE G LAYER TABLES ##################
+-- ################## CREATED VIEWS FOR customers, products, sales IN ANOTHER QUERY ##################
