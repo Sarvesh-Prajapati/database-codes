@@ -59,7 +59,7 @@ UPDATE accident_data SET Lat_Long = ST_GeomFromText(REPLACE(LatLong, "'", '')); 
 
 ALTER TABLE accident_data MODIFY COLUMN Lat_Long POINT AFTER LatLong;  -- moving the 'Lat_Long' col from the last pos to right beside 'LatLong' col
 
-SELECT * FROM accident_data;    -- shows 'Lat_long' vals as BLOB objects as it should
+SELECT * FROM accident_data;    -- shows 'Lat_long' vals as BLOB objects (as it should)
 
 -- We can now drop the VARCHAR type 'LatLong' col as it is no longer needed but let's just keep it since 'Lat_Long' vals are displayed as BLOB
 -- ALTER TABLE accident_data DROP COLUMN LatLong;
