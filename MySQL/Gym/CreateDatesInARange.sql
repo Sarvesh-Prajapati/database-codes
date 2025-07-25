@@ -1,4 +1,4 @@
--- WITH RECURSIVE Date_Ranges AS 
+-- WITH RECURSIVE Date_Ranges AS
 -- (
 --     SELECT '2018-11-30' AS Date
 --    UNION ALL
@@ -8,7 +8,7 @@
 
 WITH RECURSIVE Date_Ranges AS 
 (
-    SELECT CURRENT_DATE() AS myDate
+   SELECT CURRENT_DATE() AS myDate
    UNION ALL
    SELECT myDate + INTERVAL 1 DAY FROM Date_Ranges WHERE myDate < '2024-12-31'
 )
