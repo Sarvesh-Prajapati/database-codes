@@ -1,5 +1,6 @@
 USE sql_forda;
 
+
 -- -------------------------- FACTORIAL ------------------------
 DROP PROCEDURE IF EXISTS fact;
 Delimiter //
