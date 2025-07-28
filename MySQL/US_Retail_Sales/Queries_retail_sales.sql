@@ -4,7 +4,6 @@ USE sql_forda;
 
 -- Get table's columns' info
 SHOW FIELDS FROM sql_forda.c3_retail_sales;
-
 -- Glance at table's content
 SELECT * FROM c3_retail_sales;
 
