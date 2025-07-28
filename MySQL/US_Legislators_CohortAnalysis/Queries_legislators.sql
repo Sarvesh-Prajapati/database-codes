@@ -3,7 +3,6 @@ USE sql_forda;
 -- TABLES USED : 'c4_legislators', 'c4_legislators_terms', 'c0_date_dim'
 
 -- Glancing at table data
-
 SELECT * FROM c4_legislators_terms;
 
 -- 1. First time term starting date of each legislator
