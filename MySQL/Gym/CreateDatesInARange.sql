@@ -1,3 +1,5 @@
+-- ############## USING RECURSIVE CTE ######################
+
 -- WITH RECURSIVE Date_Ranges AS
 -- (
 --     SELECT '2018-11-30' AS Date
