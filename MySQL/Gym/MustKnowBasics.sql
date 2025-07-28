@@ -11,6 +11,7 @@ SELECT * FROM customers ORDER BY first_name;
 SELECT first_name, last_name, points, points+10 FROM customers;
 SELECT first_name, last_name, points, points * 10 + 100 AS new_points FROM customers;
 SELECT first_name, last_name, points, points * 10 + 100 AS 'new points' FROM customers;
+
 SELECT state FROM customers;
 SELECT DISTINCT state FROM customers;
 
