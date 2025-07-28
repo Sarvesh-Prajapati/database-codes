@@ -1,6 +1,7 @@
 -- Query typing order is: SELECT, FROM [JOINS], WHERE, GROUP BY, HAVING, ORDER BY
 -- Query processing order is: FROM [JOINS], WHERE, GROUP BY, HAVING, SELECT, [Window Fns if any], ORDER BY
 
+
 USE sql_cookbook;
 SHOW TABLES; -- shows all tables in sql_cookbook database; also shows views
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'sql_cookbook'; -- hard-coded way to show tables in sql_cookbook as in above query
