@@ -1,6 +1,5 @@
 # ------------ DATEDIFF, TIMESTAMPDIFF, and INTERVAL examples ----------------
 
-
 -- ==============================
 -- MySQL DATEDIFF() Examples
 -- ==============================
