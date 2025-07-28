@@ -9,7 +9,6 @@ DESCRIBE dept; -- describes table 'dept'
 
 SELECT * FROM emp; -- returns all rows of table 'emp'
 SELECT * FROM dept; -- returns all rows of table 'dept' 
-
 SELECT * FROM emp LIMIT 5; -- returns top 5 rows
 SELECT * FROM emp ORDER BY rand() LIMIT 5; -- returns random 5 rows from 'emp' table
 
