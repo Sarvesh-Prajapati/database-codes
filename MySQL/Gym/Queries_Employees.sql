@@ -1,6 +1,7 @@
 USE sql_forda;
 SELECT * FROM sql_forda.employees;
 
+
 -- Each dept's total salary as % of net salary of all depts
 SELECT 
     deptid
