@@ -35,7 +35,6 @@ SELECT
     , DATEDIFF(end_date, start_date) AS duration
 FROM tasks;
 
-
 -- ==============================
 -- MySQL TIMESTAMPDIFF() Examples
 -- ==============================
