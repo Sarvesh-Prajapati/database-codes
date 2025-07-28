@@ -1,5 +1,6 @@
 USE sql_ForDA;
 
+
 -- --------------------- Step 1: Create target table
 DROP TABLE IF EXISTS people;
 CREATE TABLE people (
