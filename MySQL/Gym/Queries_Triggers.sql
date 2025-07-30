@@ -1,5 +1,6 @@
 USE sql_forda;
 
+
 -- Since triggers are not visible (like procedures) in Workbench, here's how we get details of the triggers
 
 SHOW TRIGGERS;
