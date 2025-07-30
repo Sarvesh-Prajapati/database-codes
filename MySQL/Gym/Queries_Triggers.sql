@@ -11,7 +11,7 @@ WHERE TRIGGER_SCHEMA = 'your_database_name';
 
 -- -------------------------------- Log the INSERT into an audit table ----------------------------------
 
--- Create an audit table
+-- Create an audit table to log INSERT into
 
 DROP TABLE IF EXISTS EMPLOYEE_ALERT_LOG;
 CREATE TABLE EMPLOYEE_ALERT_LOG
