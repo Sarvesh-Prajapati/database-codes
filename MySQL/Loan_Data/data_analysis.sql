@@ -360,3 +360,91 @@ ORDER BY income_quartile;
 |               4 |                 1 |                 0 |            0.00 |          83000.00 |
 | --------------- | ----------------- | ----------------- | --------------- | ----------------- |
 
+
+-- 13. Compare each loan's interest rate to the average interest rate for the same state + purpose
+  
+SELECT
+  ld1.id,
+  ld1.address_state,
+  ld1.purpose,
+  ROUND(ld1.int_rate,6) AS int_rate,
+  ROUND(
+    (SELECT AVG(ld2.int_rate)
+     FROM loan_data ld2
+     WHERE ld2.address_state = ld1.address_state
+       AND ld2.purpose = ld1.purpose
+    ), 6
+  ) AS avg_int_rate_state_purpose,
+  ROUND(ld1.int_rate - (
+    (SELECT AVG(ld2.int_rate)
+     FROM loan_data ld2
+     WHERE ld2.address_state = ld1.address_state
+       AND ld2.purpose = ld1.purpose
+    )
+  ), 6) AS int_rate_diff,
+  CASE
+    WHEN ld1.int_rate > (SELECT AVG(ld2.int_rate) FROM loan_data ld2
+                        WHERE ld2.address_state = ld1.address_state
+                          AND ld2.purpose = ld1.purpose)
+      THEN 'ABOVE'
+    WHEN ld1.int_rate < (SELECT AVG(ld2.int_rate) FROM loan_data ld2
+                        WHERE ld2.address_state = ld1.address_state
+                          AND ld2.purpose = ld1.purpose)
+      THEN 'BELOW'
+    ELSE 'EQUAL'
+  END AS cmp_to_state_purpose_avg
+FROM loan_data ld1
+ORDER BY ld1.address_state, ld1.id;
+
+-- OUTPUT SAMPLE:
+
+| ------- | ------------- | ------- | -------- | -------------------------- | ------------- | ------------------------ |
+|      id | address_state | purpose | int_rate | avg_int_rate_state_purpose | int_rate_diff | cmp_to_state_purpose_avg |
+| ------- | ------------- | ------- | -------- | -------------------------- | ------------- | ------------------------ |
+| 1068350 |            IL | car     | 0.060300 |                   0.060300 |      0.000000 | EQUAL                    |
+| 1072053 |            CA | car     | 0.186400 |                   0.173000 |      0.013400 | ABOVE                    |
+| 1069243 |            CA | car     | 0.159600 |                   0.173000 |     -0.013400 | BELOW                    |
+| 1077430 |            GA | car     | 0.152700 |                   0.152700 |      0.000000 | EQUAL                    |
+| 1041756 |            TX | car     | 0.106500 |                   0.106500 |      0.000000 | EQUAL                    |
+| ------- | ------------- | ------- | -------- | -------------------------- | ------------- | ------------------------ |
+
+
+-- 14. Find loans whose recovery rate (total_payment / loan_amount) is below the average recovery rate of their grade
+
+SELECT
+  ld1.id,
+  ld1.grade,
+  ld1.loan_amount,
+  ld1.total_payment,
+  ROUND(CASE WHEN ld1.loan_amount <> 0 THEN ld1.total_payment / ld1.loan_amount ELSE NULL END, 6) AS recovery_rate,
+  ROUND(
+    (SELECT AVG(ld2.total_payment / NULLIF(ld2.loan_amount,0))
+     FROM loan_data ld2
+     WHERE ld2.grade = ld1.grade
+    ), 6
+  ) AS avg_recovery_rate_in_grade,
+  ROUND(
+    CASE WHEN ld1.loan_amount <> 0 THEN ld1.total_payment / ld1.loan_amount ELSE NULL END
+    - (SELECT AVG(ld2.total_payment / NULLIF(ld2.loan_amount,0))
+       FROM loan_data ld2
+       WHERE ld2.grade = ld1.grade), 6
+  ) AS recovery_diff_from_grade_avg
+FROM loan_data ld1
+WHERE
+  ld1.loan_amount IS NOT NULL
+  AND (ld1.total_payment / NULLIF(ld1.loan_amount,0)) < (
+    SELECT AVG(ld2.total_payment / NULLIF(ld2.loan_amount,0))
+    FROM loan_data ld2
+    WHERE ld2.grade = ld1.grade
+  )
+ORDER BY ld1.grade, ld1.id;
+
+-- OUTPUT SAMPLE:
+
+| ------- | ----- | ----------- | ------------- | ------------- | -------------------------- | ---------------------------- |
+|      id | grade | loan_amount | total_payment | recovery_rate | avg_recovery_rate_in_grade | recovery_diff_from_grade_avg |
+| ------- | ----- | ----------- | ------------- | ------------- | -------------------------- | ---------------------------- |
+| 1069243 |     C |       12000 |          3522 |      0.293500 |                   0.348550 |                    -0.055050 |
+| ------- | ----- | ----------- | ------------- | ------------- | -------------------------- | ---------------------------- |
+
+
