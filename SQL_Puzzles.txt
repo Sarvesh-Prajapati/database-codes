@@ -1,0 +1,27 @@
+*SQL Query Practice*
+
+1. Extract all column names of a table that start with a vowel (uppercase/lowercase).
+
+2. Find the number of NULLs in each column of a table (resultset should have 2 columns; first column lists table's column headers, second column lists no. of NULLs against each column header)
+
+3. There's a table as STUDENT(*sid*, marks_maths, marks_physics, marks_chem, marks_CS), *sid* being PK non-NULL. Write a query to generate a resultset having columns as: _sid_, _max_marks_, _min_marks_, _avg_marks_.
+
+4. A table COLORS stores the names of colors row-wise as depicted:
+
+_Red,orange,green_
+_blue,Yellow,magenta_
+_Orange,Black,red_
+_Green,Blue_
+_magenta,Red_
+_orange,yellow_
+
+Write a query to group same colors in one row, first letter of each color capitalized (e.g. following resultset):
+
+_Red,Red,Red_
+_Orange,Orange,Orange_
+_Green,Green_
+_Magenta,Magenta_
+_Yellow,Yellow_
+_Black_
+
+5. A table ROMAN_DATES has only 1 column containing 1 million dates in roman numeral format (e.g. XIIVMMXXIII is 12-05-2023). All dates in the column are valid & non-NULL. Write a query to transform every date into YYYY-MM-DD format (so XIIVMMXXIII would become 2023-05-12).
